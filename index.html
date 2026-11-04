@@ -1,0 +1,1682 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Cuentos de Multiplicar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;700;900&display=swap">
+<style>
+/* Layout: a welcoming comic page. The introduction is a short series of slides, one idea
+   per screen, with gentle entrance animations and an optional background tune. Each times
+   table is a character panel with a trick; practice is a row of big answer buttons.
+   Palette: warm cream paper, deep plum ink (high contrast), teal and orange accents,
+   soft pastel panels that always carry dark text. */
+:root{
+  --bg:#1f1b33; --card:#2a2545; --ink:#f5f1ff; --muted:#cbc5e8; --line:#403a63;
+  --dots:#2b2650; --shadow:#0b0a16;
+  --accent:#5eead4; --on-accent:#10131f;
+  --hot:#fb8a5f; --on-hot:#1a1020;
+  --sun:#ffd54a; --on-sun:#2d2a4a;
+  --good:#6ee7a0; --on-good:#10131f;
+  --bad:#ff8f8f; --on-bad:#10131f;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; color:var(--ink); background-color:var(--bg);
+  background-image:radial-gradient(var(--dots) 1.3px, transparent 1.5px);
+  background-size:22px 22px;
+  font:400 17px/1.6 Nunito, system-ui, sans-serif;
+  padding-left:max(18px, env(safe-area-inset-left, 0px));
+  padding-right:max(18px, env(safe-area-inset-right, 0px));
+  padding-block:20px 48px;
+}
+h1,h2,h3{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; line-height:1.15; text-wrap:balance; margin:0}
+h1{font-size:clamp(2.1rem,7.5vw,3.2rem)}
+h2{font-size:clamp(1.7rem,5.5vw,2.2rem)}
+h3{font-size:clamp(1.3rem,4.2vw,1.6rem)}
+p{margin:0}
+ul{margin:0; padding-left:1.2em; display:grid; gap:10px}
+b{font-weight:900}
+button{font:inherit; color:inherit; cursor:pointer}
+button:focus-visible,input:focus-visible{outline:4px solid var(--accent); outline-offset:3px}
+button:disabled{opacity:.45; cursor:default}
+.wrap{max-width:880px; margin:0 auto}
+.muted{color:var(--muted)}
+.say{font-size:1.1rem}
+
+/* header */
+.top{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:16px}
+.title{
+  display:inline-block; background:var(--sun); color:var(--on-sun);
+  border:3px solid var(--ink); border-radius:16px; padding:8px 20px 6px;
+  box-shadow:5px 5px 0 var(--shadow); transform:rotate(-1.2deg);
+  animation:bob 4s ease-in-out infinite;
+}
+.title h1{color:var(--on-sun)}
+.music{
+  border:3px solid var(--ink); background:var(--card); color:var(--ink); border-radius:14px;
+  padding:8px 14px; font-weight:900; box-shadow:3px 3px 0 var(--shadow); white-space:nowrap;
+}
+.music[aria-pressed="true"]{background:var(--accent); color:var(--on-accent)}
+.lead{margin-top:20px; max-width:52ch; font-size:1.12rem}
+
+.tabs{display:flex; flex-wrap:wrap; gap:12px; margin-top:24px}
+.tabs button{
+  border:3px solid var(--ink); background:var(--card); color:var(--ink); border-radius:14px;
+  padding:9px 18px; font-weight:900; box-shadow:4px 4px 0 var(--shadow);
+}
+.tabs button[aria-selected="true"]{background:var(--accent); color:var(--on-accent); transform:translate(2px,2px); box-shadow:2px 2px 0 var(--shadow)}
+
+section{margin-top:40px}
+.panel{
+  background:var(--card); border:3px solid var(--ink); border-radius:22px;
+  box-shadow:6px 6px 0 var(--shadow); padding:32px 28px; margin-top:24px;
+  animation:rise .5s ease backwards;
+}
+
+/* introduction slides */
+.slides{min-height:360px; display:flex; flex-direction:column}
+.slide{display:grid; gap:22px; align-content:start; flex:1}
+.slide[hidden]{display:none}
+.slide:not([hidden]){animation:rise .45s ease backwards}
+.eyebrow{
+  justify-self:start; background:var(--hot); color:var(--on-hot); border-radius:999px;
+  padding:4px 14px; font-weight:900; font-size:.95rem; letter-spacing:.3px;
+}
+.confetti{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px}
+.confetti span{
+  width:26px; height:26px; border-radius:50%; border:2px solid var(--ink);
+  background:var(--c); animation:pop .5s ease backwards; animation-delay:var(--d);
+}
+
+.demo{display:flex; flex-wrap:wrap; gap:16px}
+.demo .group{
+  background:var(--bg); border:3px dashed var(--accent); border-radius:18px; padding:14px;
+  display:grid; grid-template-columns:repeat(2,1fr); gap:6px; font-size:1.9rem; line-height:1.1;
+  justify-items:center; min-width:0;
+}
+.demo .group span{animation:pop .45s ease backwards; animation-delay:var(--d)}
+.eqline{
+  font-family:"Baloo 2"; font-weight:800; font-size:clamp(1.6rem,5vw,2.1rem);
+  font-variant-numeric:tabular-nums;
+}
+.eqline .x{background:var(--sun); color:var(--on-sun); border:2px solid var(--ink); border-radius:12px; padding:0 10px}
+
+.mt{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-variant-numeric:tabular-nums; text-align:center; font-size:clamp(1rem,4vw,1.3rem)}
+.mt span{padding:8px 0; border-radius:10px; background:var(--bg); border:2px solid var(--line)}
+.mt .h{background:transparent; border:none; color:var(--accent)}
+.mt .hit{background:var(--sun); color:var(--on-sun); border:2px solid var(--ink)}
+.mt-wrap{position:relative}
+.mt button{padding:8px 0; border-radius:10px; background:var(--bg); color:var(--ink); border:2px solid var(--line); font:inherit; font-weight:800; cursor:pointer}
+.mt button:hover{border-color:var(--accent)}
+.ln{position:absolute; background:var(--hot); pointer-events:none; opacity:0; transition:opacity .25s; z-index:2; border-radius:4px}
+.ln.h{left:0; right:0; height:4px; margin-top:-2px}
+.ln.v{top:0; bottom:0; width:4px; margin-left:-2px}
+.ln.on{opacity:.9}
+ol.steps{margin:0; padding-left:0; list-style:none; counter-reset:s; display:grid; gap:14px}
+ol.steps li{
+  counter-increment:s; display:flex; gap:14px; align-items:center; margin:0;
+  background:var(--bg); border-radius:16px; padding:14px 16px;
+}
+ol.steps li::before{
+  content:counter(s); flex:0 0 auto; width:38px; height:38px; border-radius:50%;
+  display:grid; place-items:center; background:var(--hot); color:var(--on-hot);
+  font-family:"Baloo 2"; font-weight:800; font-size:1.25rem;
+}
+
+.rules{display:grid; grid-template-columns:1fr; gap:16px; max-height:min(460px,60vh); overflow-y:auto; padding:4px 8px 8px 4px; overscroll-behavior:contain}
+.rule{
+  background:var(--card); border:3px solid var(--ink); border-radius:18px; padding:16px; min-width:0;
+  display:grid; gap:12px; box-shadow:4px 4px 0 var(--shadow);
+}
+.rule-head{display:flex; gap:12px; align-items:center}
+.rule-emoji{
+  width:52px; height:52px; flex:0 0 auto; display:grid; place-items:center; font-size:1.8rem;
+  background:var(--c); border:2px solid var(--ink); border-radius:50%;
+}
+.rule-head b{display:block; font-family:"Baloo 2"; font-weight:800; font-size:1.2rem; line-height:1.2}
+.rule-head em{display:block; font-style:normal; color:var(--muted); font-size:1rem}
+.rule-box{background:var(--bg); border-radius:12px; padding:12px 14px; font-family:"Baloo 2", system-ui, sans-serif; font-weight:700; font-size:1.15rem; line-height:1.5; font-variant-numeric:tabular-nums; margin:0}
+.ex{display:flex; flex-wrap:wrap; gap:10px; justify-content:center}
+.blk{display:flex; flex-wrap:wrap; justify-content:center; align-content:flex-start; gap:12px; width:min(100%,520px); padding:14px; border-radius:16px; background:radial-gradient(rgba(0,0,0,.14) 1px, transparent 1.3px) 0 0/8px 8px, color-mix(in srgb, var(--bg) 88%, #000); font-size:clamp(11px,2.8vw,16px); line-height:1.1}
+.blk .hl{display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 8px; border-radius:999px; background:color-mix(in srgb, var(--c) 35%, var(--card)); border:2px dashed rgba(34,211,238,.65)}
+.blk span{text-align:center}
+.eqpill{display:inline-block; margin-top:6px; background:var(--sun); color:var(--on-sun); border:2px solid var(--ink); border-radius:10px; padding:2px 10px; font-family:"Baloo 2", system-ui, sans-serif}
+
+.slide-nav{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:auto; padding-top:20px}
+.dots{display:flex; gap:10px}
+.dots button{
+  width:16px; height:16px; border-radius:50%; border:2px solid var(--ink); background:var(--card); padding:0;
+}
+.dots button[aria-current="true"]{background:var(--accent)}
+
+.ghost{border:3px solid var(--ink); background:var(--card); color:var(--ink); border-radius:14px; padding:9px 18px; font-weight:900; box-shadow:3px 3px 0 var(--shadow)}
+.next{
+  border:3px solid var(--ink); background:var(--hot); color:var(--on-hot); border-radius:14px;
+  padding:10px 22px; font-family:"Baloo 2"; font-weight:800; font-size:1.2rem; box-shadow:4px 4px 0 var(--shadow);
+}
+
+/* character grid */
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:20px; margin-top:8px}
+.card{
+  position:relative; display:flex; flex-direction:column; text-align:left; padding:0;
+  background:var(--card); color:var(--ink); border:3px solid var(--ink); border-radius:20px;
+  box-shadow:5px 5px 0 var(--shadow); min-width:0; overflow:visible;
+  transition:transform .12s, box-shadow .12s;
+  animation:rise .5s ease backwards; animation-delay:var(--d, 0ms);
+}
+.card:hover{transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--shadow)}
+.card .art{
+  height:116px; display:grid; place-items:center; font-size:3.4rem;
+  background:var(--c); border-bottom:3px solid var(--ink); border-radius:17px 17px 0 0;
+}
+.card .body{padding:12px 14px 16px; display:grid; gap:4px}
+.card .name{font-family:"Baloo 2"; font-weight:800; font-size:1.4rem; line-height:1.1}
+.card .sub{color:var(--muted); font-size:1rem}
+.card .stars{margin-top:8px; letter-spacing:3px; font-size:1.05rem}
+.card .stars .off{opacity:.3}
+.burst{
+  position:absolute; top:-12px; right:-10px; width:62px; height:62px; display:grid; place-items:center;
+  background:var(--sun); color:var(--on-sun); border:3px solid var(--ink);
+  font-family:"Baloo 2"; font-weight:800; font-size:1.3rem;
+  clip-path:polygon(50% 0%,61% 16%,80% 6%,82% 26%,100% 30%,90% 46%,100% 62%,82% 68%,84% 88%,64% 84%,50% 100%,36% 84%,16% 88%,18% 68%,0% 62%,10% 46%,0% 30%,18% 26%,20% 6%,39% 16%);
+}
+.burst-wrap{position:relative; display:block}
+.card-rule{margin-top:6px; font-size:.98rem; color:var(--muted)}
+.hint{margin-top:20px; font-size:1rem; color:var(--muted)}
+
+/* collapsible extras */
+details.more{margin-top:36px}
+details.more > summary{cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary h3{margin-top:0}
+details.more > summary::after{content:"▾"; font-size:1.3rem; color:var(--accent); font-weight:900}
+details.more[open] > summary::after{content:"▴"}
+details.more[open] > summary{margin-bottom:10px}
+
+/* story page */
+.back{
+  border:3px solid var(--ink); background:var(--sun); color:var(--on-sun); border-radius:12px;
+  padding:6px 14px; font-weight:900; box-shadow:3px 3px 0 var(--shadow);
+}
+.hero{display:flex; gap:20px; align-items:center; flex-wrap:wrap}
+.hero .art{
+  width:112px; height:112px; flex:0 0 auto; display:grid; place-items:center; font-size:3.6rem;
+  background:var(--c); border:3px solid var(--ink); border-radius:50%;
+}
+.bubble{
+  position:relative; background:var(--bg); color:var(--ink); border:3px solid var(--ink); border-radius:18px;
+  padding:14px 18px; font-weight:700; font-size:1.1rem; text-wrap:pretty;
+}
+.trick{
+  margin-top:20px; background:var(--sun); color:var(--on-sun); border:3px solid var(--ink); border-radius:16px;
+  padding:14px 18px; font-size:1.1rem;
+}
+.trick b{font-family:"Baloo 2"; font-size:1.3rem}
+label.range{display:grid; gap:10px; margin-top:24px; font-weight:900}
+label.range output{font-family:"Baloo 2"; font-weight:800; font-size:1.4rem; color:var(--accent)}
+input[type="range"]{width:100%; accent-color:var(--accent); min-height:32px}
+.eq{margin-top:20px}
+.pic{
+  display:grid; grid-template-columns:repeat(var(--cols,5),1fr); gap:8px 6px; margin:20px 0 8px;
+  font-size:clamp(18px,4.2vw,30px); line-height:1.2; justify-items:center; min-width:0;
+}
+.pic span{transition:transform .15s}
+.pic span:hover{transform:scale(1.25)}
+.story-line{margin-top:18px}
+
+.times-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px; margin-top:12px}
+.times-grid div{
+  background:var(--bg); color:var(--ink); border:2px solid var(--line); border-radius:14px;
+  padding:10px 6px; text-align:center; font-weight:800; font-variant-numeric:tabular-nums;
+}
+.times-grid div b{color:var(--accent)}
+
+/* practice */
+.chips{display:flex; flex-wrap:wrap; gap:12px; margin-top:8px}
+.chip{
+  border:3px solid var(--ink); background:var(--card); color:var(--ink); border-radius:12px; padding:7px 14px;
+  font-weight:900; box-shadow:3px 3px 0 var(--shadow);
+}
+.chip[aria-pressed="true"]{background:var(--hot); color:var(--on-hot); transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow)}
+.prog{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-weight:900}
+.prog span:first-child{background:var(--ink); color:var(--bg); padding:2px 10px; border-radius:8px}
+.prompt{margin-top:18px; font-family:"Baloo 2"; font-weight:700; font-size:clamp(1.3rem,4.5vw,1.6rem); line-height:1.35; text-wrap:pretty}
+.toggle{display:inline-flex; align-items:center; gap:8px; margin-top:14px; font-weight:900; cursor:pointer}
+.toggle input{width:20px; height:20px; accent-color:var(--accent)}
+.opts{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px}
+.opts button{
+  min-height:76px; border:3px solid var(--ink); border-radius:16px; background:var(--card); color:var(--ink);
+  font-family:"Baloo 2"; font-weight:800; font-size:2rem; box-shadow:4px 4px 0 var(--shadow);
+  transition:transform .08s, box-shadow .08s; font-variant-numeric:tabular-nums;
+}
+.opts button:not(:disabled):hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--shadow)}
+.opts button:not(:disabled):active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow)}
+.opts button.right{background:var(--good); color:var(--on-good)}
+.opts button.wrong{background:var(--bad); color:var(--on-bad)}
+.opts button:disabled{cursor:default}
+.fb{margin-top:18px; min-height:2.8em; font-weight:800; font-size:1.1rem}
+.fb.good{color:var(--good)}
+.fb.bad{color:var(--bad)}
+.fb small{display:block; font-weight:700; color:var(--ink); margin-top:6px}
+.practice-next{margin-top:14px}
+.result{text-align:center}
+.result .big{font-family:"Baloo 2"; font-weight:800; font-size:clamp(3.5rem,14vw,5rem); line-height:1; color:var(--hot)}
+.result .stars{font-size:2.2rem; letter-spacing:6px; margin:14px 0}
+.result .row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:22px}
+.ghost-box{border:3px solid var(--ink); background:var(--card); color:var(--ink); border-radius:14px; padding:9px 18px; font-weight:900; box-shadow:3px 3px 0 var(--shadow)}
+
+@keyframes rise{from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none}}
+@keyframes pop{from{opacity:0; transform:scale(.5)} to{opacity:1; transform:none}}
+@keyframes bob{0%,100%{transform:rotate(-1.2deg)} 50%{transform:rotate(1deg) translateY(-3px)}}
+
+@media (max-width:480px){
+  .opts{grid-template-columns:1fr}
+  .hero{flex-direction:column; text-align:left}
+  .panel{padding:26px 20px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important; transition:none!important}
+}
+/* Tablas por número: una columna clara de hechos, con completar independiente. */
+.table-modebar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.table-modebar>div{flex:1 1 220px;min-width:0}
+.facts-controls{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0 18px}
+.facts-numbers{display:flex;flex:1 1 300px;gap:8px;flex-wrap:wrap}
+.facts-numbers .chip{min-width:38px;text-align:center;padding:6px 10px}
+.facts-numbers .chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);transform:translate(2px,2px);box-shadow:1px 1px 0 var(--shadow)}
+.facts-controls>.ghost-box{flex:0 0 auto;margin-left:auto}
+.facts-list{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;max-width:560px;margin:0 auto}
+.facts-row{width:100%;min-height:43px;display:grid;grid-template-columns:1fr 24px minmax(48px,.55fr);align-items:center;gap:8px;padding:7px 13px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:800 1.05rem "Baloo 2",system-ui,sans-serif;text-align:center;font-variant-numeric:tabular-nums;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.facts-row:hover,.facts-row.selected{background:var(--sun);border-color:var(--ink);color:var(--on-sun);transform:translateY(-1px)}
+.facts-row strong{font-size:1.12rem}
+.facts-input-row{cursor:default;grid-template-columns:1fr 24px minmax(54px,.45fr) minmax(48px,.45fr)}
+.facts-input-row:hover{background:var(--bg);border-color:var(--line);color:var(--ink);transform:none}
+.facts-input-row input{width:100%;min-width:0;height:34px;text-align:center;border:2px dashed var(--accent);border-radius:9px;background:var(--card);color:var(--ink);font:800 1rem "Baloo 2",system-ui,sans-serif}
+.facts-input-row input.correct{border:2px solid var(--good);background:color-mix(in srgb,var(--good) 15%,var(--card))}
+.facts-input-row input.incorrect{border:2px solid var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.fact-mark{font:800 .78rem Nunito,system-ui,sans-serif;color:var(--muted)}
+@media(max-width:520px){.facts-controls{align-items:stretch}.facts-controls>.ghost-box{margin-left:auto}.facts-row{min-height:40px}.facts-input-row{grid-template-columns:1fr 18px minmax(48px,.5fr) minmax(42px,.4fr);gap:5px;padding:6px 8px}}
+
+/* ---------- añadidos: tarjetas, lecciones y tabla interactiva ---------- */
+[hidden]:not([hidden=until-found i]){display:none!important}
+.mt{grid-template-columns:repeat(11,minmax(0,1fr)); min-width:650px; font-size:clamp(.82rem,2.3vw,1.15rem)}
+.mt-wrap{overflow-x:auto; padding-bottom:5px}
+.mt button.hit{background:var(--sun); color:var(--on-sun); border:2px solid var(--ink); animation:softPulse 1.3s ease-in-out infinite}
+.rules{display:block; max-height:none; overflow:visible; padding:4px 4px 8px}
+.rule{animation:rise .35s ease both}
+.rule-nav,.lesson-nav,.mode-tabs{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:16px}
+.rule-nav span,.lesson-progress{font-weight:900; color:var(--muted)}
+.rule-nav button,.lesson-tabs button,.mode-tabs button{border:2px solid var(--ink); background:var(--card); color:var(--ink); border-radius:12px; padding:7px 13px; font-weight:900; box-shadow:3px 3px 0 var(--shadow)}
+.rule-nav button:disabled{opacity:.35}
+.card .difficulty{display:inline-flex; width:max-content; max-width:100%; margin-top:6px; border:2px solid var(--ink); border-radius:999px; padding:2px 10px; font-weight:900; font-size:.82rem; line-height:1.5}
+.difficulty.easy{background:#c8f2d4; color:#214c35}
+.difficulty.medium{background:#ffec9e; color:#594516}
+.difficulty.challenge{background:#ffd0c2; color:#702c20}
+.table-shortcut .art{background:#171717!important; color:#fff; border-bottom-color:var(--ink)}
+.table-shortcut .symbol-circle{width:76px; height:76px; border:3px solid #fff; border-radius:50%; display:grid; place-items:center; font-family:"Baloo 2"; font-weight:800; font-size:1.45rem; letter-spacing:1px; line-height:1; background:#242424; box-shadow:0 0 0 3px rgba(255,255,255,.15)}
+.table-shortcut .burst{background:#171717; color:#fff; font-size:1rem; clip-path:none; border-radius:50%; width:56px; height:56px}
+.lesson-tabs{display:flex; flex-wrap:wrap; gap:9px; margin-top:24px}
+.lesson-tabs button[aria-pressed="true"],.mode-tabs button[aria-pressed="true"]{background:var(--accent); color:var(--on-accent); transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow)}
+.lesson-pages{margin-top:20px; touch-action:pan-y}
+.lesson-page{display:grid; gap:14px; animation:rise .38s ease both}
+.lesson-page[hidden]{display:none}
+.lesson-page h3{margin-top:4px}
+.lesson-groups{display:grid; grid-template-columns:repeat(auto-fit,minmax(82px,1fr)); gap:10px; align-items:start; margin:8px 0}
+.lesson-group{min-width:0; padding:9px 6px; border:2px dashed var(--accent); border-radius:15px; background:var(--bg); display:grid; gap:6px; justify-items:center; animation:pop .35s ease both; animation-delay:var(--d,0ms)}
+.group-label{font-size:.78rem; font-weight:900; color:var(--muted)}
+.group-items{display:flex; flex-wrap:wrap; justify-content:center; gap:3px; font-size:clamp(17px,3vw,24px); line-height:1.1}
+.lesson-explain{margin-top:4px}
+.story-builder{margin-top:12px; padding:16px; border-radius:17px; background:var(--bg); border:2px solid var(--line)}
+.step-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:12px; margin-top:10px}
+.step-card{padding:14px; border:2px solid var(--ink); border-radius:16px; background:var(--card); box-shadow:3px 3px 0 var(--shadow); animation:rise .42s ease both; animation-delay:var(--d,0ms)}
+.step-card strong{display:block; font-family:"Baloo 2"; font-size:1.5rem; line-height:1.2}
+.step-card small{display:block; color:var(--muted); margin-top:4px; font-weight:800}
+.step-card .step-number{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; color:var(--on-hot); background:var(--hot); font-weight:900; margin-bottom:8px}
+.table-in-story{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin-top:12px}
+.table-in-story button{border:2px solid var(--line); border-radius:12px; padding:9px 4px; background:var(--bg); color:var(--ink); font-weight:900; font-family:"Baloo 2"; font-size:1rem}
+.table-in-story button:hover,.table-in-story button.selected{background:var(--sun); border-color:var(--ink); color:var(--on-sun)}
+.table-detail{margin-top:14px; padding:15px; border:2px solid var(--line); border-radius:16px; background:var(--bg); animation:rise .25s ease both}
+.table-detail .lesson-groups{grid-template-columns:repeat(auto-fit,minmax(55px,1fr))}
+.lesson-question{padding:16px; border-radius:17px; background:var(--bg); border:2px solid var(--line)}
+.lesson-question .opts{margin-top:14px}
+.lesson-nav{border-top:2px dashed var(--line); padding-top:16px}
+.lesson-nav .next{margin-left:auto}
+.mode-tabs{justify-content:flex-start; margin:20px 0}
+.table-scroll{width:100%; overflow-x:auto; padding:4px 2px 10px; overscroll-behavior-x:contain}
+.big-table,.fill-grid{display:grid; grid-template-columns:repeat(11,minmax(40px,1fr)); gap:4px; min-width:520px; font-family:"Baloo 2"; font-weight:800; text-align:center; font-variant-numeric:tabular-nums}
+.big-table button,.big-table span,.fill-grid button,.fill-grid span,.fill-grid input{min-width:0; min-height:38px; display:grid; place-items:center; border:2px solid var(--line); border-radius:9px; background:var(--bg); color:var(--ink); padding:3px; font:inherit}
+.big-table .head,.fill-grid .head{background:transparent; color:var(--accent); border-color:transparent}
+.big-table button:hover,.big-table button.selected{background:var(--sun); color:var(--on-sun); border-color:var(--ink); transform:scale(1.04)}
+.facts-grid button{font-size:clamp(.63rem,1.25vw,.86rem);white-space:nowrap;letter-spacing:-.3px;padding:2px 0}
+.table-explain{margin-top:14px; padding:17px; border:3px solid var(--ink); border-radius:18px; background:var(--card); box-shadow:4px 4px 0 var(--shadow); animation:rise .3s ease both}
+.table-explain .hero-mini{display:flex; align-items:center; gap:12px}
+.table-explain .hero-mini span{display:grid; place-items:center; width:50px; height:50px; border-radius:50%; background:var(--c); border:2px solid var(--ink); font-size:1.7rem}
+.table-explain .mini-drawing{margin-top:10px}
+.fill-grid input{width:100%; min-height:36px; text-align:center; background:var(--card); border:2px dashed var(--accent); font-size:1rem; padding:1px}
+.fill-grid input.correct{border:2px solid var(--good); background:color-mix(in srgb,var(--good) 15%,var(--card))}
+.fill-grid input.incorrect{border:2px solid var(--bad); background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.fill-actions{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px}
+.fill-feedback{margin-top:12px; min-height:1.8em; font-weight:900}
+.mode-content[hidden]{display:none}
+.opts button:nth-child(1){background:#e21b3c;color:#fff}
+.opts button:nth-child(2){background:#1368ce;color:#fff}
+.opts button:nth-child(3){background:#d89e00;color:#2d2a4a}
+.opts button:nth-child(4){background:#26890c;color:#fff}
+.opts button.right{background:var(--good)!important;color:var(--on-good)!important;animation:pop .28s ease both}
+.opts button.wrong{background:var(--bad)!important;color:var(--on-bad)!important;animation:wiggle .28s ease both}
+.q-kind{display:inline-block; width:max-content; padding:3px 11px; border-radius:999px; background:var(--sun); color:var(--on-sun); border:2px solid var(--ink); font-weight:900}
+.draw-build{margin-top:14px; padding:14px; border:2px dashed var(--accent); border-radius:17px; background:var(--bg)}
+.draw-groups{display:grid; grid-template-columns:repeat(auto-fit,minmax(70px,1fr)); gap:8px; margin-top:10px}
+.draw-group{padding:8px 4px; border-radius:12px; background:var(--card); border:2px solid var(--line); text-align:center; animation:pop .25s ease both}
+.draw-group div{font-size:1.25rem; line-height:1.2; overflow-wrap:anywhere}
+.draw-tools{display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-top:12px}
+.draw-tools button{border:2px solid var(--ink); background:var(--card); border-radius:11px; padding:6px 12px; font-weight:900; box-shadow:2px 2px 0 var(--shadow)}
+.draw-count{font-weight:900; color:var(--accent)}
+@keyframes softPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+@keyframes wiggle{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media(max-width:520px){
+  .table-in-story{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lesson-tabs button{flex:1 1 calc(50% - 9px)}
+  .lesson-nav{gap:8px}
+  .lesson-nav button{padding:8px 12px}
+  .rule-nav{justify-content:center}
+  .table-shortcut .symbol-circle{width:68px;height:68px}
+}
+
+
+
+/* Fine-tuning for the expanded teaching activities. */
+.rules{display:block;max-height:none;overflow:visible;padding:4px 4px 12px}
+.rule{animation:rise .4s ease both;position:relative;margin:0 0 20px}
+.rule:not(:last-child)::after{content:"";display:block;border-bottom:2px dashed var(--line);position:absolute;left:8%;right:8%;bottom:-13px}
+.rule-info{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;background:var(--bg);border-radius:13px;padding:12px 14px}
+.rule-info p{font-weight:800;line-height:1.5}
+.rule-info strong{font-family:"Baloo 2";font-size:1.05rem;background:var(--sun);color:var(--on-sun);padding:8px 11px;border:2px solid var(--ink);border-radius:12px;white-space:nowrap}
+.mt-wrap{animation:rise .5s ease both}
+.mt button.selected{background:var(--sun);color:var(--on-sun);border:2px solid var(--ink);animation:softPulse 1.4s ease-in-out infinite}
+.mtTip{margin-top:12px}
+.tabs[hidden]{display:none!important}
+.story-builder-groups{margin-top:12px}
+.number-pills{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.number-pill{min-width:38px;padding:7px 9px;border:2px solid var(--ink);border-radius:11px;background:var(--card);color:var(--ink);font-family:"Baloo 2";font-weight:900;box-shadow:2px 2px 0 var(--shadow)}
+.number-pill.selected{background:var(--accent);color:var(--on-accent);transform:translate(1px,1px);box-shadow:1px 1px 0 var(--shadow)}
+#mimiExtra{margin-top:10px}
+.half-visual{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:14px}
+.half-panel{padding:12px;border:2px dashed var(--accent);border-radius:15px;background:var(--bg);display:grid;gap:8px}
+.half-panel>b{font-family:"Baloo 2"}
+.half-groups{display:flex;flex-wrap:wrap;gap:6px}
+.half-group{display:grid;gap:3px;justify-items:center;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:9px}
+.half-group small{font-size:.7rem;color:var(--muted);font-weight:900}
+.half-group>span:last-child{font-size:1.1rem;line-height:1.2;overflow-wrap:anywhere}
+.lesson-result-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:2px dashed var(--line)}
+.lesson-streak{font-family:"Baloo 2";font-weight:900;background:var(--sun);color:var(--on-sun);border:2px solid var(--ink);border-radius:12px;padding:7px 12px}
+.lesson-result-actions[hidden]{display:none!important}
+.lesson-nav #lessonNext[hidden]{display:none!important}
+.lesson-nav #lessonProgress{margin-left:auto}
+.spreadsheet-art{display:grid!important;place-items:center;border-radius:18px!important}
+.spreadsheet-icon{width:62px;height:62px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4px;padding:5px;border:3px solid currentColor;border-radius:8px;background:rgba(255,255,255,.08)}
+.spreadsheet-icon i{display:block;border:2px solid currentColor;border-radius:3px;background:rgba(255,255,255,.08)}
+.table-shortcut .symbol-circle{width:76px;height:76px;border:3px solid #fff;border-radius:16px;display:grid;place-items:center;background:#242424;box-shadow:0 0 0 3px rgba(255,255,255,.15)}
+.table-shortcut .spreadsheet-icon{width:52px;height:52px;gap:3px;padding:4px;border-width:2px}
+.table-shortcut .spreadsheet-icon i{border-width:1.5px}
+.table-load{animation:rise .55s ease both}
+.draw-selector{margin-top:12px;padding:10px 12px;border-radius:13px;background:var(--card);border:1px solid var(--line)}
+.draw-selector>span{font-weight:900}
+.draw-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:9px;margin-top:12px}
+.draw-group{padding:9px 6px;min-width:0}
+.draw-group-items{min-height:31px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:3px;margin:7px 0;font-size:1.18rem;line-height:1.15}
+.draw-group-items small{font-size:.78rem;color:var(--muted);font-weight:800}
+.draw-item-tools{display:flex;justify-content:center;gap:7px}
+.draw-item-tools button{width:34px;height:32px;border:2px solid var(--ink);border-radius:9px;background:var(--sun);color:var(--on-sun);font-size:1.1rem;font-weight:900;line-height:1;box-shadow:2px 2px 0 var(--shadow)}
+.draw-item-tools button:disabled{opacity:.35}
+.draw-count{margin-top:10px}
+.draw-ready{font-weight:900;color:var(--muted);margin-top:7px;min-height:1.5em}
+.draw-ready.ready{color:var(--good)}
+.draw-build .number-pills{margin-bottom:4px}
+.opts[hidden]{display:none!important}
+.prog{margin-bottom:18px;align-items:center}
+.q-kind{margin-bottom:10px}
+.prompt{margin-top:4px}
+.fill-grid input{appearance:textfield;-moz-appearance:textfield}
+.fill-grid input::-webkit-outer-spin-button,.fill-grid input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.fill-grid [data-r].line-active,.fill-grid [data-fill-r].line-active,.fill-grid [data-fill-c].line-active{background:color-mix(in srgb,var(--accent) 20%,var(--card));border-color:var(--accent)}
+.fill-grid input:focus{background:var(--sun);color:var(--on-sun);border-color:var(--ink)}
+@media(max-width:600px){
+  .rule-info{grid-template-columns:1fr}
+  .rule-info strong{white-space:normal;width:max-content;max-width:100%}
+  .spreadsheet-icon{width:52px;height:52px}
+  .lesson-result-actions{align-items:stretch}
+  .lesson-result-actions>*{flex:1;text-align:center}
+}
+
+
+/* Polished table selection and teaching feedback refinements. */
+.ln{background:rgba(248,72,72,.50);opacity:0;transition:opacity .18s ease}
+.ln.on{opacity:1}
+.mt button.selected{position:relative;z-index:1}
+.table-tip{margin-top:10px;padding:12px 15px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-weight:800;line-height:1.5;box-shadow:none}
+#bigTable{position:relative}
+.big-table .big-ln{position:absolute;z-index:3;pointer-events:none;background:rgba(248,72,72,.50);border-radius:3px;display:block}
+.big-table .big-ln.h{left:0;right:0;height:3px;margin-top:-1.5px}
+.big-table .big-ln.v{top:0;bottom:0;width:3px;margin-left:-1.5px}
+.big-table button.selected{position:relative;z-index:2}
+.table-explain .table-tip{margin-top:12px}
+.feedback-explain{margin-top:12px;padding:14px 15px;border:2px solid var(--line);border-radius:15px;background:var(--bg);animation:rise .3s ease both}
+.feedback-explain p{font-weight:800}
+.feedback-groups{max-height:260px;overflow:auto;padding:2px 3px 5px;overscroll-behavior:contain}
+.feedback-explain[hidden]{display:none!important}
+
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <span class="title"><h1>Cuentos de Multiplicar</h1></span>
+      <button class="music" id="music" aria-pressed="false">♫ Música: apagada</button>
+    </div>
+    <p class="lead">Aquí las tablas de multiplicar tienen amigos. Cada personaje tiene un cuento y un truco para recordar sus números.</p>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button role="tab" id="tab-intro" data-tab="intro" aria-selected="true" aria-controls="intro">Bienvenida</button>
+      <button role="tab" id="tab-meet" data-tab="meet" aria-selected="false" aria-controls="meet">Personajes</button>
+      <button role="tab" id="tab-practice" data-tab="practice" aria-selected="false" aria-controls="practice">Practicar</button>
+    </nav>
+  </header>
+
+  <!-- INTRODUCCIÓN: una idea por pantalla -->
+  <section id="intro" role="tabpanel" aria-labelledby="tab-intro">
+    <div class="panel slides" id="slides">
+
+      <div class="slide" data-slide="0">
+        <span class="eyebrow">Bienvenida</span>
+        <h2>¡Hola, mago de los números!</h2>
+        <p class="say">Aquí aprenderás las tablas con cuentos, dibujos y trucos. No hay respuestas malas: cada error te enseña algo.</p>
+        <div class="confetti" aria-hidden="true" id="confetti"></div>
+      </div>
+
+      <div class="slide" data-slide="1" hidden>
+        <span class="eyebrow">Paso 1</span>
+        <h2>¿Qué es multiplicar?</h2>
+        <p class="say">Multiplicar es sumar grupos iguales. En vez de escribir <b>2 + 2 + 2</b>, escribimos <b>3 × 2</b>, que significa <b>tres grupos de dos</b>.</p>
+        <div class="demo" id="demo" aria-label="Tres grupos de dos manzanas"></div>
+        <p class="eqline" id="demoEq"></p>
+      </div>
+
+      <div class="slide" data-slide="2" hidden>
+        <span class="eyebrow">Paso 2</span>
+        <h2>¿Cómo se lee?</h2>
+        <p class="say">Se lee <b>"tres por dos"</b>. El primer número dice cuántos grupos hay y el segundo, cuántos objetos hay en cada grupo.</p>
+        <p class="say">Por ejemplo:</p>
+        <ul class="say">
+          <li>Manzanas en 3 grupos de 2 manzanas.</li>
+          <li>Patas en 4 mesas de 4 patas.</li>
+        </ul>
+        <p class="muted">Más adelante verás que 2 × 3 y 3 × 2 dan el mismo resultado, aunque los grupos se organicen de otra manera.</p>
+      </div>
+
+      <div class="slide" data-slide="3" hidden>
+        <span class="eyebrow">Paso 3</span>
+        <h2>Trucos de los personajes</h2>
+        <p class="say">Cada tabla tiene una regla para recordarla fácil.</p>
+        <div class="rules" id="rules"></div>
+      </div>
+
+      <div class="slide" data-slide="4" hidden>
+        <span class="eyebrow">Paso 4</span>
+        <h2>Usar una tabla de multiplicar</h2>
+        <p class="say">Esto es como usar una tabla de multiplicar: busca un número en la fila de arriba y otro en la columna de la izquierda. Donde se cruzan está el resultado.</p>
+        <div class="mt-wrap" id="mtWrap">
+          <div class="mt" id="mt" role="table" aria-label="Tabla de multiplicar del 1 al 10"></div>
+          <i class="ln h" id="lnH"></i>
+          <i class="ln v" id="lnV"></i>
+        </div>
+        <p class="eqline" id="mtEx" aria-live="polite">Ejemplo: 3 × 2 = <span class="x">6</span></p>
+        <p class="table-tip" id="mtTip" aria-live="polite">Truco de Pepo: dos grupos iguales forman el doble.</p>
+        <p class="muted">Toca cualquier casilla para cambiar el ejemplo y descubrir el truco de ese personaje.</p>
+      </div>
+
+      <div class="slide" data-slide="5" hidden>
+        <span class="eyebrow">Paso 5</span>
+        <h2>¿Cómo se juega?</h2>
+        <ol class="steps">
+          <li>Visita a cada personaje y mira su cuento con el dibujo.</li>
+          <li>Cambia el número de grupos y cuenta los objetos de cada uno.</li>
+          <li>Practica en <b>Practicar</b>. Si te equivocas, el personaje te dará una pista.</li>
+          <li>Ve a tu ritmo. Está bien parar, descansar y volver cuando quieras.</li>
+        </ol>
+      </div>
+
+      <nav class="slide-nav" aria-label="Pasos de la bienvenida">
+        <button class="ghost-box" id="prev">← Atrás</button>
+        <div class="dots" id="dots"></div>
+        <button class="next" id="nextSlide">Siguiente →</button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- PERSONAJES -->
+  <section id="meet" role="tabpanel" aria-labelledby="tab-meet" hidden>
+    <div class="grid" id="grid"></div>
+    <p class="hint">Las estrellas muestran tu mejor puntaje en cada tabla. Tres estrellas significan 9 o 10 correctas.</p>
+  </section>
+
+  <!-- LECCIÓN DE UN PERSONAJE: las páginas cambian dentro del mismo personaje -->
+  <section id="story" role="tabpanel" hidden>
+    <button class="back" id="back">← Todos los personajes</button>
+    <div class="panel" style="margin-top:20px">
+      <div class="hero" id="hero"></div>
+      <nav class="lesson-tabs" id="lessonTabs" aria-label="Páginas de la lección">
+        <button data-lesson-tab="0" aria-pressed="true">1. Ejemplo</button>
+        <button data-lesson-tab="1" aria-pressed="false">2. Truco</button>
+        <button data-lesson-tab="2" aria-pressed="false">3. Tabla</button>
+        <button data-lesson-tab="3" aria-pressed="false">4. Pregunta</button>
+      </nav>
+      <div class="lesson-pages" id="lessonPages">
+        <article class="lesson-page" data-lesson-page="0">
+          <span class="eyebrow">Primero, mira</span>
+          <h3 id="lessonExampleTitle">Un ejemplo con dibujos</h3>
+          <p class="say" id="lessonExampleText"></p>
+          <div class="lesson-groups" id="lessonDrawing"></div>
+          <p class="eqline" id="lessonEq"></p>
+          <p class="bubble lesson-explain" id="lessonExplain"></p>
+          <div class="story-builder">
+            <h3>Construye otro dibujo</h3>
+            <p class="say">Elige cuántos grupos quieres formar. Cada tarjeta muestra los objetos de un grupo.</p>
+            <div class="number-pills" id="storyGroupChoices" role="group" aria-label="Elige cuántos grupos"></div>
+            <p class="eqline eq" id="eq"></p>
+            <div class="lesson-groups story-builder-groups" id="storyBuilderGroups"></div>
+            <p class="bubble story-line" id="storyLine"></p>
+            <p class="muted" id="mimiExtra" hidden></p>
+          </div>
+        </article>
+        <article class="lesson-page" data-lesson-page="1" hidden>
+          <span class="eyebrow">Ahora, el truco</span>
+          <h3>Una forma de pensarlo</h3>
+          <div class="trick" id="trick"></div>
+          <div id="halfLesson"></div>
+          <p class="bubble" id="ruleExtra"></p>
+        </article>
+        <article class="lesson-page" data-lesson-page="2" hidden>
+          <span class="eyebrow">Explora</span>
+          <h3>La tabla completa de <span id="storyTableName"></span></h3>
+          <p class="say">Toca cualquier resultado para ver cuántos grupos hay y cómo se dibuja.</p>
+          <div class="table-in-story" id="timetable"></div>
+          <div class="table-detail" id="storyTableDetail" aria-live="polite"></div>
+        </article>
+        <article class="lesson-page" data-lesson-page="3" hidden>
+          <span class="eyebrow">Tu turno</span>
+          <h3>Una pregunta para comprobarlo</h3>
+          <div class="lesson-question">
+            <p class="say" id="storyQuestion"></p>
+            <div class="opts" id="lessonOpts"></div>
+            <div class="fb" id="lessonFb" aria-live="polite"></div>
+            <div class="lesson-result-actions" id="lessonResultActions" hidden>
+              <span class="lesson-streak" id="lessonStreak">🔥 Racha: 0</span>
+              <button class="ghost-box" id="anotherLessonQuestion">Otra pregunta ↗</button>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="lesson-nav">
+        <button class="ghost-box" id="lessonPrev" disabled>← Anterior</button>
+        <span class="lesson-progress" id="lessonProgress">1 de 4</span>
+        <button class="next" id="lessonNext">Siguiente →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLA GENERAL: se abre desde la tarjeta negra después de los personajes -->
+  <section id="multTable" role="tabpanel" hidden>
+    <button class="back" id="tableBack">← Personajes</button>
+    <div class="panel" style="margin-top:20px">
+      <div class="hero">
+        <span class="art spreadsheet-art" style="--c:#171717;background:#171717;color:#fff;border-color:var(--ink)" aria-hidden="true"><span class="spreadsheet-icon"><i></i><i></i><i></i><i></i></span></span>
+        <div><h2>Tabla de multiplicar</h2><p class="muted">Primero puedes mirar los ejemplos. Después, completa algunas casillas.</p></div>
+      </div>
+      <div class="mode-tabs" role="group" aria-label="Modo de la tabla">
+        <button data-table-mode="review" aria-pressed="true">Tabla completa</button>
+        <button data-table-mode="facts" aria-pressed="false">Tablas del 1 al 10</button>
+      </div>
+      <div class="mode-content" id="reviewMode">
+        <div class="table-modebar">
+          <div><h3>Tabla completa</h3><p class="muted">Explora los resultados del 1 al 10. Toca una casilla para ver sus grupos.</p></div>
+          <button class="ghost-box" id="toggleChartFill" aria-pressed="false">Completar</button>
+        </div>
+        <div id="chartReviewArea">
+          <p class="say">La fila indica cuántos grupos tenemos. La columna indica cuántos objetos hay en cada grupo. Donde se cruzan está el resultado.</p>
+          <div class="table-scroll"><div class="big-table" id="bigTable" role="grid" aria-label="Tabla completa del 1 al 10"></div></div>
+          <div class="table-explain" id="bigTableDetail" aria-live="polite">Toca un resultado para ver el personaje, el dibujo y la explicación.</div>
+        </div>
+        <div id="chartFillArea" hidden>
+          <p class="say">Completa las casillas vacías de la tabla. Cada ronda añade un poquito más de práctica.</p>
+          <div class="table-scroll"><div class="fill-grid" id="fillGrid"></div></div>
+          <div class="fill-actions">
+            <button class="next" id="checkFill">Comprobar</button>
+            <button class="ghost-box" id="newFill">Otra práctica</button>
+          </div>
+          <p class="fill-feedback" id="fillFeedback" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="mode-content" id="factsMode" hidden>
+        <div class="table-modebar">
+          <div><h3 id="factsTitle">Tabla del 1</h3><p class="muted">Elige un número para ver todos sus hechos de multiplicación, del ×1 al ×10.</p></div>
+        </div>
+        <div class="facts-controls">
+          <div class="facts-numbers" id="factsNumbers" role="group" aria-label="Elige una tabla del 1 al 10"></div>
+          <button class="ghost-box" id="toggleFactsFill" aria-pressed="false">Completar</button>
+        </div>
+        <div id="factsReviewArea">
+          <div class="facts-list" id="factsList" aria-label="Hechos de multiplicación"></div>
+          <div class="table-explain" id="factsTableDetail" aria-live="polite">Toca un hecho para ver su resultado y un ejemplo con grupos.</div>
+        </div>
+        <div id="factsFillArea" hidden>
+          <p class="say">Escribe el resultado de cada operación de esta tabla. Solo tienes que completar estos diez hechos.</p>
+          <div class="facts-list facts-input-list" id="factsInputList" aria-label="Completa los diez hechos de esta tabla"></div>
+          <div class="fill-actions">
+            <button class="next" id="checkFactsFill">Comprobar</button>
+          </div>
+          <p class="fill-feedback" id="factsFillFeedback" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRÁCTICA -->
+  <section id="practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+    <button class="back" id="practiceBack">← Personajes</button>
+    <div class="chips" id="chips" role="group" aria-label="Elige una tabla"></div>
+    <div class="panel" id="qPanel" hidden>
+      <div class="prog"><span id="progText"></span><span id="scoreText"></span></div>
+      <span class="q-kind" id="qKind">Con dibujos</span>
+      <h3 class="prompt" id="prompt"></h3>
+      <label class="toggle"><input type="checkbox" id="showPic" checked> Mostrar el dibujo</label>
+      <div class="pic" id="qPic"></div>
+      <div class="draw-build" id="drawBuild" hidden>
+        <b>Haz tu propio dibujo:</b>
+        <p class="muted" id="drawPrompt">Primero elige cuántos grupos quieres. Después añade la misma cantidad de objetos a cada grupo.</p>
+        <div class="draw-selector">
+          <span>¿Cuántos grupos?</span>
+          <div class="number-pills" id="drawGroupChoices" role="group" aria-label="Elige entre uno y diez grupos"></div>
+        </div>
+        <div class="draw-groups" id="drawGroups"></div>
+        <p class="draw-count" id="drawCount">1 grupo · 0 objetos en cada grupo</p>
+        <p class="draw-ready" id="drawReady" aria-live="polite">Cada grupo empieza vacío. Añade objetos con + o −.</p>
+      </div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb" aria-live="polite"></div>
+      <div class="feedback-explain" id="feedbackExplain" hidden>
+        <p id="feedbackText"></p>
+        <div class="lesson-groups feedback-groups" id="feedbackDrawing"></div>
+      </div>
+      <button class="next practice-next" id="next" hidden>Siguiente</button>
+    </div>
+    <div class="panel result" id="resPanel" hidden></div>
+  </section>
+</div>
+
+<script>
+const CH = [
+  {n:1, name:"Mimi", art:"la", animal:"Ratona", emoji:"🐭", items:"quesitos", ie:"🧀", color:"#eadcff",
+   intro:"Mimi guarda un quesito en cada grupo. Cuando multiplicas por uno, el número se queda igual.",
+   rule:"Por uno, queda igual", tip:"1 × 7 = 7. Multiplicar por 1 no cambia el número."},
+  {n:2, name:"Pepo", art:"el", animal:"Pingüino", emoji:"🐧", items:"peces", ie:"🐟", color:"#bfe3ff",
+   intro:"Pepo organiza sus peces en dos grupos de tres para compartirlos con su amigo.",
+   rule:"Dos es el doble", tip:"2 × 6 = 6 + 6 = 12."},
+  {n:3, name:"Tila", art:"la", animal:"Tigresa", emoji:"🐯", items:"galletas", ie:"🍪", color:"#ffd9b3",
+   intro:"Tila hornea galletas en tandas de tres y las comparte con toda la selva.",
+   rule:"Cuenta de 3 en 3", tip:"3, 6, 9, 12, 15, 18... de tres en tres."},
+  {n:4, name:"Olivia", art:"la", animal:"Lechuza", emoji:"🦉", items:"bellotas", ie:"🌰", color:"#dccbff",
+   intro:"Olivia apila bellotas en cuatro montoncitos ordenados antes de que llegue la nieve.",
+   rule:"El doble del doble", tip:"Duplica dos veces: 4 × 5 = 10 + 10 = 20."},
+  {n:5, name:"Facundo", art:"el", animal:"Sapo", emoji:"🐸", items:"monedas", ie:"🪙", color:"#c8f2d4",
+   intro:"Facundo se zambulle en el estanque y encuentra monedas brillantes, cinco en cada buceo.",
+   rule:"Cuenta de 5 en 5", tip:"Siempre terminan en 0 o en 5: 5, 10, 15, 20..."},
+  {n:6, name:"Zara", art:"la", animal:"Cebra", emoji:"🦓", items:"manzanas", ie:"🍎", color:"#ffcfe2",
+   intro:"Zara recoge manzanas del huerto en filas de seis.",
+   rule:"Es el doble del tres", tip:"6 × 4 = 12 + 12 = 24."},
+  {n:7, name:"Benito", art:"el", animal:"Oso", emoji:"🐻", items:"tarros de miel", ie:"🍯", color:"#ffec9e",
+   intro:"Benito lleva siete tarros de miel en cada viaje a la colmena grande.",
+   rule:"Memoriza la lista del 7", tip:"7, 14, 21, 28, 35, 42... de siete en siete."},
+  {n:8, name:"Sol", art:"la", animal:"Araña", emoji:"🕷️", items:"hilos", ie:"🧵", color:"#c4f0f2",
+   intro:"Sol teje ocho hilos plateados para cada telaraña que construye.",
+   rule:"Es el doble del cuatro", tip:"8 × 3 = 12 + 12 = 24."},
+  {n:9, name:"Rubén", art:"el", animal:"Conejo", emoji:"🐰", items:"zanahorias", ie:"🥕", color:"#ffd0c2",
+   intro:"Rubén llena nueve canastas de zanahorias para la fiesta de primavera.",
+   rule:"Las cifras suman 9", tip:"9, 18, 27, 36... ¡las cifras suman 9!"},
+  {n:10, name:"Mateo", art:"el", animal:"Mono", emoji:"🐒", items:"plátanos", ie:"🍌", color:"#dcf2a6",
+   intro:"Mateo pela diez plátanos para la gran fiesta de la selva.",
+   rule:"Añade un cero", tip:"5 × 10 = 50. Solo añade un cero."}
+];
+const byN = n => CH.find(c => c.n == n);
+const ITEM_SINGULAR = {1:"quesito",2:"pez",3:"galleta",4:"bellota",5:"moneda",6:"manzana",7:"tarro de miel",8:"hilo",9:"zanahoria",10:"plátano"};
+const itemLabel = (c,count) => count === 1 ? ITEM_SINGULAR[c.n] : c.items;
+const $ = s => document.querySelector(s);
+const title = c => `${c.name} ${c.art} ${c.animal}`;
+
+/* ---------- progreso guardado (en este navegador) ---------- */
+let store = {best:{}};
+try { store = JSON.parse(localStorage.getItem("cuentosMultiplicar")) || store; } catch(e) {}
+if (!store.best) store.best = {};
+function saveStore(){ try { localStorage.setItem("cuentosMultiplicar", JSON.stringify(store)); } catch(e) {} }
+function starsFor(score){ return score >= 9 ? 3 : score >= 7 ? 2 : score >= 5 ? 1 : 0; }
+
+/* ---------- pestañas ---------- */
+const SECTIONS = ["intro","meet","practice","multTable"];
+function showTab(name){
+  document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name));
+  SECTIONS.forEach(s => { $("#" + s).hidden = s !== name; });
+  $("#story").hidden = true;
+  $(".tabs").hidden = name !== "meet";
+  if (name === "meet") renderMeet();
+  if (name === "practice") renderChips();
+  if (name === "multTable") { syncChartFillView(); syncFactsFillView(); }
+}
+document.querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+
+/* ---------- diapositivas de bienvenida ---------- */
+const slides = Array.from(document.querySelectorAll(".slide"));
+let si = 0;
+function renderDots(){
+  $("#dots").innerHTML = slides.map((_, k) =>
+    `<button aria-label="Paso ${k + 1}" ${k === si ? 'aria-current="true"' : ""} data-k="${k}"></button>`).join("");
+}
+function goSlide(i){
+  si = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, k) => { s.hidden = k !== si; });
+  $("#prev").disabled = si === 0;
+  $("#nextSlide").textContent = si === slides.length - 1 ? "¡Vamos a jugar!" : "Siguiente →";
+  renderDots();
+}
+$("#prev").addEventListener("click", () => goSlide(si - 1));
+$("#nextSlide").addEventListener("click", () => {
+  if (si === slides.length - 1) showTab("meet");
+  else goSlide(si + 1);
+});
+$("#dots").addEventListener("click", e => {
+  const b = e.target.closest("[data-k]");
+  if (b) goSlide(+b.dataset.k);
+});
+
+/* ---------- decoración e ilustraciones de la bienvenida ---------- */
+function drawDemo(){
+  const groups = 3, each = 2;
+  $("#demo").innerHTML = Array.from({length:groups}, (_,g) =>
+    `<div class="group" aria-label="Grupo ${g + 1}">${Array.from({length:each}, (_,k) =>
+      `<span style="--d:${(g * each + k) * 90}ms">🍎</span>`).join("")}</div>`
+  ).join("");
+  $("#demoEq").innerHTML = `3 × 2 = <span class="x">6</span>`;
+}
+function drawTable(){
+  const cells = ['<span class="h">×</span>'];
+  for (let c = 1; c <= 10; c++) cells.push(`<span class="h">${c}</span>`);
+  for (let r = 1; r <= 10; r++) {
+    cells.push(`<span class="h">${r}</span>`);
+    for (let c = 1; c <= 10; c++) cells.push(`<button type="button" data-r="${r}" data-c="${c}">${r * c}</button>`);
+  }
+  $("#mt").innerHTML = cells.join("");
+  updateWelcomeTable(3,2);
+}
+let lnT = null;
+let selectedWelcomeExample = {groups:3, each:2};
+function characterForTableExample(groups,each){
+  // Prefer a character with a memorable shortcut when either factor uses that table.
+  const preferred = [10,8,6,4,9,5,2,1,7,3];
+  const n = preferred.find(v => groups === v || each === v) || each;
+  return byN(n);
+}
+function updateWelcomeTable(r,c){
+  const b = $(`#mt button[data-r="${r}"][data-c="${c}"]`);
+  if (!b) return;
+  document.querySelectorAll("#mt button[data-r]").forEach(x => x.classList.toggle("selected", x === b));
+  $("#lnH").style.top = (b.offsetTop + b.offsetHeight / 2) + "px";
+  $("#lnV").style.left = (b.offsetLeft + b.offsetWidth / 2) + "px";
+  $("#lnH").classList.add("on");
+  $("#lnV").classList.add("on");
+  $("#mtEx").innerHTML = `Ejemplo: ${r} × ${c} = <span class="x">${r*c}</span>`;
+  const character = characterForTableExample(r,c);
+  $("#mtTip").innerHTML = `<b>Truco de ${character.name}:</b> ${tipForTableExample(r,c,character)}`;
+}
+$("#mt").addEventListener("click", e => {
+  const b = e.target.closest("button[data-r]");
+  if (b) updateWelcomeTable(+b.dataset.r, +b.dataset.c);
+});
+function tipForTableExample(groups,each,character){
+  const answer = groups * each;
+  const focus = character.n;
+  const other = groups === focus ? each : groups;
+  if(focus === 8 || focus === 6 || focus === 4){
+    const half = focus / 2;
+    const partial = other * half;
+    return `${groups} × ${each} = ${partial} + ${partial} = ${answer}. La mitad de ${focus} es ${half}: primero hacemos ${other} × ${half} = ${partial} y luego duplicamos.`;
+  }
+  if(focus === 10){
+    if(groups === 10 && each === 10) return `5 × 10 = 50. Solo añade un cero. Para este ejemplo, 10 × 10 = 100.`;
+    return `Multiplicar ${other} por 10 es añadir un cero: ${other} × 10 = ${answer}.`;
+  }
+  if(focus === 9) return `Piensa en diez grupos y quita uno: ${other} × 10 = ${other*10}; ${other*10} − ${other} = ${answer}.`;
+  if(focus === 5) return `Los resultados de la tabla del 5 terminan en 0 o en 5. Cuenta de cinco en cinco hasta ${answer}.`;
+  if(focus === 2) return `Dos grupos de ${other}: ${other} + ${other} = ${answer}. Es el doble.`;
+  if(focus === 1) return `Multiplicar por 1 no cambia el número: ${other} × 1 = ${answer}.`;
+  if(focus === 3) return `Cuenta de tres en tres: ${Array.from({length:groups*each/3},(_,i)=>(i+1)*3).join(", ")}.`;
+  return character.tip;
+}
+
+function drawConfetti(){
+  $("#confetti").innerHTML = CH.map((c, k) =>
+    `<span style="--c:${c.color}; --d:${k * 80}ms"></span>`).join("");
+}
+const SAY = {
+  1:"Un grupo de uno. El número no cambia.",
+  2:"Dos grupos de 2. ¡Es el doble!",
+  3:"Dos grupos de 3. Cuenta de 3 en 3.",
+  4:"Dos grupos de 4. El doble del doble.",
+  5:"Dos grupos de 5. Siempre termina en 0 o en 5.",
+  6:"Dos grupos de 6. Es el doble de 3 por 6.",
+  7:"Dos grupos de 7. Cuenta de 7 en 7.",
+  8:"Dos grupos de 8. Es el doble de 4 por 8.",
+  9:"Dos grupos de 9. Las cifras de 18 suman 9.",
+  10:"Dos grupos de 10. Solo añade un cero."
+};
+const SQ = {
+  1:"Multiplicar por 1 deja el mismo número.",
+  2:"Es el doble de 2. Cuenta dos veces el 2.",
+  3:"Cuenta de 3 en 3: 3, 6, 9, 12, 15...",
+  4:"El doble del doble: 4 + 4 + 4 + 4 = 16.",
+  5:"Siempre termina en 0 o en 5: 5, 10, 15, 20, 25.",
+  6:"Es el doble de 3 por 6: 18 + 18 = 36.",
+  7:"Cuenta de 7 en 7: 7, 14, 21, 28, 35, 42, 49.",
+  8:"Es el doble de 4 por 8: 32 + 32 = 64.",
+  9:"Las cifras de cada resultado suman 9: 18, 27, 36.",
+  10:"Solo añade un cero: 10 × 10 = 100."
+};
+const ROWS = {1:5, 2:3, 3:4, 4:3, 5:6, 6:5, 7:6, 8:7, 9:8, 10:9};
+const SQ2 = {
+  1:"Cuenta de 1 en 1: 1, 2, 3, 4...", 
+  2:"Cuenta de 2 en 2: 2, 4, 6, 8...",
+  3:"Cuenta de 3 en 3: 3, 6, 9, 12, 15...",
+  4:"Cuenta de 4 en 4: 4, 8, 12, 16...",
+  5:"Siempre termina en 0 o en 5: 5, 10, 15, 20, 25, 30.",
+  6:"Cuenta de 6 en 6: 6, 12, 18, 24, 30.",
+  7:"Cuenta de 7 en 7: 7, 14, 21, 28, 35, 42.",
+  8:"Cuenta de 8 en 8: 8, 16, 24, 32, 40, 48, 56.",
+  9:"Cuenta de 9 en 9: 9, 18, 27, 36, 45, 54, 63, 72.",
+  10:"Cuenta de 10 en 10: 10, 20, 30, 40, 50, 60, 70, 80, 90."
+};
+const RULE_EXAMPLES = {
+  1:{groups:4,each:1}, 2:{groups:2,each:3}, 3:{groups:3,each:4},
+  4:{groups:4,each:5}, 5:{groups:5,each:3}, 6:{groups:6,each:4},
+  7:{groups:7,each:2}, 8:{groups:8,each:3}, 9:{groups:9,each:4},
+  10:{groups:10,each:2}
+};
+function renderRules(){
+  $("#rules").innerHTML = CH.map((c, index) => {
+    const example = RULE_EXAMPLES[c.n];
+    const sequence = Array.from({length:10}, (_,i) => (i+1)*c.n).join(", ");
+    const visual = Array.from({length:example.groups}, (_,i) =>
+      `<span class="hl" style="--d:${i*55}ms">${Array.from({length:example.each}, () => `<span>${c.ie}</span>`).join("")}</span>`
+    ).join("");
+    const countLine = c.n === 1 ? "Cuenta de 1 en 1: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10." : `Cuenta de ${c.n} en ${c.n}: ${sequence}.`;
+    return `<article class="rule" style="--c:${c.color};--d:${index*55}ms">
+      <div class="rule-head"><span class="rule-emoji" aria-hidden="true">${c.emoji}</span><div><b>×${c.n} · ${c.name}</b><em>${c.rule}</em></div></div>
+      <div class="ex" aria-hidden="true"><div class="blk">${visual}</div></div>
+      <div class="rule-info"><p>${countLine}</p><strong>${example.groups} grupos de ${example.each} = ${example.groups} × ${example.each}</strong></div>
+    </article>`;
+  }).join("");
+}
+
+/* ---------- música de fondo (suave, se activa con un clic) ---------- */
+let audioCtx = null, musicTimer = null;
+const MUSIC_BPM = 88;
+const MUSIC_BEAT = 60 / MUSIC_BPM;
+const MUSIC_LOOP = MUSIC_BEAT * 32; // ocho compases tranquilos
+let musicBus = null, musicDelay = null;
+function ensureMusicBus(){
+  if(musicBus) return;
+  musicBus = audioCtx.createGain();
+  musicBus.gain.value = 0.82;
+  musicBus.connect(audioCtx.destination);
+  // A very soft echo gives the plucked notes a spacious, woodland feel.
+  musicDelay = audioCtx.createDelay(0.6);
+  musicDelay.delayTime.value = 0.24;
+  const wet = audioCtx.createGain(); wet.gain.value = 0.13;
+  const feedback = audioCtx.createGain(); feedback.gain.value = 0.12;
+  musicBus.connect(musicDelay);
+  musicDelay.connect(wet); wet.connect(audioCtx.destination);
+  musicDelay.connect(feedback); feedback.connect(musicDelay);
+}
+function midiHz(note){ return 440 * Math.pow(2,(note-69)/12); }
+function musicVoice(freq,start,duration,options={}){
+  if(!audioCtx || !freq) return;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  osc.type=options.type||"sine";
+  osc.frequency.setValueAtTime(freq,start);
+  if(options.detune) osc.detune.setValueAtTime(options.detune,start);
+  const attack=options.attack ?? 0.025;
+  const release=options.release ?? 0.12;
+  const peak=options.volume ?? 0.02;
+  const stopAt=start+duration;
+  const sustainAt=Math.max(start+attack+0.005,stopAt-release);
+  gain.gain.setValueAtTime(0.0001,start);
+  gain.gain.linearRampToValueAtTime(peak,start+attack);
+  gain.gain.setValueAtTime(peak,sustainAt);
+  gain.gain.exponentialRampToValueAtTime(0.0001,stopAt);
+  osc.connect(gain).connect(musicBus||audioCtx.destination);
+  osc.start(start); osc.stop(stopAt+0.035);
+}
+function playTune(){
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx) return;
+  audioCtx=audioCtx||new Ctx();
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  ensureMusicBus();
+  const start=audioCtx.currentTime+0.08;
+  // Original eight-bar theme: soft harp arpeggios, airy flute-like melody,
+  // warm sustained chords and a light bass. The harmony resolves back to C.
+  const bars=[
+    {root:36,chord:[48,55,60,64,67,74],arp:[60,67,74,67,64,67,74,67],mel:[72,76,79,84,79,76,74,76]},
+    {root:43,chord:[43,50,55,59,62,69],arp:[59,62,69,62,55,62,69,62],mel:[74,79,83,86,83,79,76,79]},
+    {root:45,chord:[45,52,57,60,64,71],arp:[60,64,71,64,57,64,71,64],mel:[72,76,81,84,81,79,76,72]},
+    {root:41,chord:[41,48,53,57,60,67],arp:[60,65,72,65,57,65,72,65],mel:[72,77,81,84,81,77,76,72]},
+    {root:36,chord:[48,55,60,64,67,74],arp:[60,67,74,67,64,67,74,67],mel:[76,79,84,88,84,79,76,72]},
+    {root:43,chord:[43,50,55,59,62,69],arp:[59,62,69,62,55,62,69,62],mel:[74,79,83,86,83,79,74,71]},
+    {root:41,chord:[41,48,53,57,60,67],arp:[60,65,72,65,57,65,72,65],mel:[72,77,81,84,81,77,72,69]},
+    {root:36,chord:[48,55,60,64,67,72],arp:[60,64,67,72,67,64,60,55],mel:[72,76,79,84,79,76,74,72]}
+  ];
+  bars.forEach((bar,index)=>{
+    const at=start+index*MUSIC_BEAT*4;
+    // Floating, sustained chord bed.
+    bar.chord.forEach((note,i)=>{
+      musicVoice(midiHz(note),at,MUSIC_BEAT*3.92,{type:"sine",volume:i===0?0.006:0.0042,attack:0.7,release:0.48,detune:(i%2?3:-3)});
+    });
+    // Gentle bass pulse on the first and third beat.
+    musicVoice(midiHz(bar.root),at,MUSIC_BEAT*2.7,{type:"triangle",volume:0.018,attack:0.08,release:0.3});
+    musicVoice(midiHz(bar.root+7),at+MUSIC_BEAT*2,MUSIC_BEAT*1.45,{type:"sine",volume:0.009,attack:0.12,release:0.22});
+    // Harp-like eighth-note arpeggio.
+    bar.arp.forEach((note,i)=>{
+      const t=at+i*MUSIC_BEAT*0.5;
+      musicVoice(midiHz(note),t,MUSIC_BEAT*0.38,{type:"triangle",volume:0.018,attack:0.009,release:0.22});
+      musicVoice(midiHz(note+12),t+0.018,MUSIC_BEAT*0.24,{type:"sine",volume:0.0045,attack:0.008,release:0.17});
+    });
+    // A clear, light melody sits above the arpeggios.
+    bar.mel.forEach((note,i)=>{
+      const t=at+i*MUSIC_BEAT*0.5;
+      musicVoice(midiHz(note),t,MUSIC_BEAT*0.43,{type:"sine",volume:0.015,attack:0.045,release:0.18});
+      if(i===0 || i===4) musicVoice(midiHz(note+12),t+0.025,MUSIC_BEAT*0.25,{type:"sine",volume:0.0035,attack:0.03,release:0.16});
+    });
+    // Little high chimes, like light through leaves, at the end of alternating bars.
+    if(index%2===1){
+      const t=at+MUSIC_BEAT*3.45;
+      musicVoice(midiHz(91+(index%3)),t,MUSIC_BEAT*0.8,{type:"sine",volume:0.007,attack:0.01,release:0.48});
+    }
+  });
+}
+function setMusic(on){
+  clearInterval(musicTimer); musicTimer = null;
+  if (on) { playTune(); musicTimer = setInterval(playTune, MUSIC_LOOP * 1000); }
+  $("#music").setAttribute("aria-pressed", String(on));
+  $("#music").textContent = on ? "♫ Música: encendida" : "♫ Música: apagada";
+}
+$("#music").addEventListener("click", () => setMusic($("#music").getAttribute("aria-pressed") !== "true"));
+
+/* ---------- personajes ---------- */
+function difficultyFor(n){
+  if ([1,2,3,5,10].includes(n)) return {label:"Fácil", cls:"easy"};
+  if ([4,6,7,8].includes(n)) return {label:"Media", cls:"medium"};
+  return {label:"Desafiante", cls:"challenge"};
+}
+function renderMeet(){
+  const cards = CH.map((c, k) => {
+    const s = starsFor(store.best[c.n] || 0);
+    const stars = [0,1,2].map(i => `<span class="${i < s ? "" : "off"}">★</span>`).join("");
+    const d = difficultyFor(c.n);
+    return `<button class="card" style="--c:${c.color}; --d:${k * 60}ms" data-n="${c.n}" aria-label="${title(c)}, tabla del ${c.n}">
+      <span class="burst-wrap"><span class="art" aria-hidden="true">${c.emoji}</span>
+      <span class="burst" aria-hidden="true">×${c.n}</span></span>
+      <span class="body">
+        <span class="name">${c.name}</span>
+        <span class="sub">${c.art === "el" ? "El" : "La"} ${c.animal.toLowerCase()}</span>
+        <span class="difficulty ${d.cls}">Dificultad: ${d.label}</span>
+        <span class="stars" aria-hidden="true">${stars}</span>
+      </span>
+    </button>`;
+  }).join("");
+  $("#grid").innerHTML = cards + `<button class="card table-shortcut" data-open-table aria-label="Abrir tabla de multiplicar">
+    <span class="art"><span class="symbol-circle" aria-hidden="true"><span class="spreadsheet-icon"><i></i><i></i><i></i><i></i></span></span></span>
+    <span class="body"><span class="name">Tabla de multiplicar</span><span class="sub">Repasar y practicar</span><span class="difficulty" style="background:#171717;color:#fff">Todas las tablas</span></span>
+  </button>`;
+}
+$("#grid").addEventListener("click", e => {
+  const tableCard = e.target.closest("[data-open-table]");
+  if (tableCard) { showTab("multTable"); return; }
+  const b = e.target.closest("[data-n]");
+  if (b) openStory(b.dataset.n);
+});
+
+/* ---------- lección de un personaje ---------- */
+function drawGroups(el, groups, each, emo){
+  el.innerHTML = Array.from({length:groups}, (_,i) =>
+    `<div class="lesson-group" style="--d:${i*45}ms"><span class="group-label">Grupo ${i+1}</span><div class="group-items">${Array.from({length:each}, () => `<span aria-hidden="true">${emo}</span>`).join("")}</div></div>`
+  ).join("");
+}
+const LESSON_EXAMPLES = RULE_EXAMPLES;
+let curN = 2, lessonPage = 0, lessonGroupsCount = 3, lessonItems = 3;
+let storyAnswered = false, lessonStreak = 0, storyBuilderGroups = 4;
+function showLessonPage(i){
+  lessonPage = Math.max(0,Math.min(3,i));
+  document.querySelectorAll("[data-lesson-page]").forEach(p => p.hidden = +p.dataset.lessonPage !== lessonPage);
+  document.querySelectorAll("[data-lesson-tab]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.lessonTab === lessonPage)));
+  $("#lessonPrev").disabled = lessonPage === 0;
+  $("#lessonNext").hidden = lessonPage === 3;
+  $("#lessonProgress").textContent = `${lessonPage + 1} de 4`;
+  if (lessonPage === 3) renderStoryQuestion();
+}
+document.querySelectorAll("[data-lesson-tab]").forEach(b => b.addEventListener("click", () => showLessonPage(+b.dataset.lessonTab)));
+$("#lessonPrev").addEventListener("click", () => showLessonPage(lessonPage - 1));
+$("#lessonNext").addEventListener("click", () => showLessonPage(lessonPage + 1));
+let lessonTouchX = null;
+$("#lessonPages").addEventListener("touchstart", e => {
+  if (e.target.closest("button,input,.table-in-story,.table-detail,.number-pills")) return;
+  lessonTouchX = e.changedTouches[0].clientX;
+}, {passive:true});
+$("#lessonPages").addEventListener("touchend", e => {
+  if (lessonTouchX === null) return;
+  const dx = e.changedTouches[0].clientX - lessonTouchX;
+  if (Math.abs(dx) > 65) showLessonPage(lessonPage + (dx < 0 ? 1 : -1));
+  lessonTouchX = null;
+}, {passive:true});
+function openStory(n){
+  curN = +n;
+  const c = byN(n), example = LESSON_EXAMPLES[c.n];
+  document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", "false"));
+  $(".tabs").hidden = true;
+  SECTIONS.forEach(section => { $("#" + section).hidden = true; });
+  $("#story").hidden = false;
+  $("#story").style.setProperty("--c", c.color);
+  $("#hero").style.setProperty("--c", c.color);
+  $("#hero").innerHTML = `<span class="art" aria-hidden="true">${c.emoji}</span>
+    <div style="flex:1 1 220px"><h2>${title(c)}</h2><p class="bubble" style="margin-top:14px">${c.intro}</p></div>`;
+  lessonGroupsCount = example.groups;
+  lessonItems = example.each;
+  $("#lessonExampleTitle").textContent = `${lessonGroupsCount} × ${lessonItems}: ${lessonGroupsCount} grupos de ${lessonItems}`;
+  $("#lessonExampleText").textContent = `El primer número (${lessonGroupsCount}) indica cuántos grupos hay. El segundo (${lessonItems}) indica cuántos ${itemLabel(c,lessonItems)} hay en cada grupo.`;
+  drawGroups($("#lessonDrawing"), lessonGroupsCount, lessonItems, c.ie);
+  $("#lessonEq").innerHTML = `${lessonGroupsCount} × ${lessonItems} = <span class="x">${lessonGroupsCount * lessonItems}</span>`;
+  $("#lessonExplain").textContent = `${c.name} tiene ${lessonGroupsCount} grupos con ${lessonItems} ${itemLabel(c,lessonItems)} en cada uno. Sumamos los grupos iguales para encontrar el total.`;
+  $("#trick").innerHTML = `<b>Truco de ${c.name}:</b> ${c.rule}. ${c.tip}`;
+  renderHalfLesson(c);
+  $("#storyTableName").textContent = c.name;
+  $("#timetable").innerHTML = Array.from({length:10}, (_,i) => {
+    const k = i + 1;
+    return `<button type="button" data-story-mult="${k}" class="${k === lessonGroupsCount ? "selected" : ""}">${k} × ${c.n} = ${k * c.n}</button>`;
+  }).join("");
+  renderStoryTableDetail(lessonGroupsCount);
+  storyBuilderGroups = c.n === 1 ? 4 : 3;
+  renderStoryGroupChoices();
+  updateStoryBuilder();
+  storyAnswered = false;
+  lessonStreak = 0;
+  $("#lessonFb").textContent = "";
+  $("#lessonResultActions").hidden = true;
+  showLessonPage(0);
+  window.scrollTo({top:0,behavior:"smooth"});
+  $("#back").focus();
+}
+function renderHalfLesson(c){
+  const groups = lessonGroupsCount;
+  const full = lessonItems;
+  const total = groups * full;
+  if (c.n === 2){
+    const oneGroup = full;
+    $("#halfLesson").innerHTML = `<p class="say">Pepo hace dos grupos iguales. Primero contamos un grupo de ${oneGroup}; después repetimos exactamente el mismo grupo.</p>
+      <div class="step-cards">
+        <div class="step-card" style="--d:0ms"><span class="step-number">1</span><strong>2 × ${oneGroup}</strong><small>Dos grupos de ${oneGroup} peces.</small></div>
+        <div class="step-card" style="--d:90ms"><span class="step-number">2</span><strong>1 × ${oneGroup} = ${oneGroup}</strong><small>Contamos un solo grupo primero.</small></div>
+        <div class="step-card" style="--d:180ms"><span class="step-number">3</span><strong>${oneGroup} + ${oneGroup}</strong><small>Añadimos el mismo grupo otra vez.</small></div>
+        <div class="step-card" style="--d:270ms"><span class="step-number">4</span><strong>${oneGroup} + ${oneGroup} = ${total}</strong><small>Dos grupos iguales forman el doble.</small></div>
+      </div>
+      <div class="half-visual"><div class="half-panel"><b>Primer grupo</b><div class="half-groups"><span class="half-group"><small>Grupo 1</small><span>${Array.from({length:oneGroup},()=>c.ie).join(" ")}</span></span></div></div><div class="half-panel"><b>Repetimos el grupo</b><div class="half-groups"><span class="half-group"><small>Grupo 2</small><span>${Array.from({length:oneGroup},()=>c.ie).join(" ")}</span></span></div></div></div>`;
+    $("#ruleExtra").textContent = `Un grupo tiene ${oneGroup} peces. Dos grupos tienen ${oneGroup} + ${oneGroup} = ${total}. Por eso multiplicar por 2 es encontrar el doble.`;
+  } else if (c.n === 4){
+    const halfGroups = groups / 2;
+    const halfTotal = halfGroups * full;
+    const pairVisual = `<div class="half-groups">${Array.from({length:halfGroups},(_,i)=>`<span class="half-group"><small>Grupo ${i+1}</small><span>${Array.from({length:full},()=>c.ie).join(" ")}</span></span>`).join("")}</div>`;
+    $("#halfLesson").innerHTML = `<p class="say">El doble del doble significa que primero calculamos dos grupos y luego repetimos esos mismos dos grupos para tener cuatro.</p>
+      <div class="step-cards">
+        <div class="step-card"><span class="step-number">1</span><strong>${groups} × ${full}</strong><small>Cuatro grupos con ${full} bellotas en cada uno.</small></div>
+        <div class="step-card"><span class="step-number">2</span><strong>${halfGroups} × ${full} = ${halfTotal}</strong><small>Primero contamos solo dos grupos.</small></div>
+        <div class="step-card"><span class="step-number">3</span><strong>${halfTotal} + ${halfTotal}</strong><small>Duplicamos: repetimos los mismos dos grupos.</small></div>
+        <div class="step-card"><span class="step-number">4</span><strong>${halfTotal} + ${halfTotal} = ${total}</strong><small>Ahora tenemos cuatro grupos de ${full}.</small></div>
+      </div>
+      <div class="half-visual"><div class="half-panel"><b>Primera pareja de grupos</b>${pairVisual}<small>${halfGroups} × ${full} = ${halfTotal}</small></div><div class="half-panel"><b>La misma pareja otra vez</b>${pairVisual}<small>${halfTotal} más = ${total}</small></div></div>`;
+    $("#ruleExtra").textContent = `Primero contamos dos grupos de ${full}: ${halfTotal}. Después repetimos esos dos grupos: ${halfTotal} + ${halfTotal} = ${total}. Es el doble del doble.`;
+  } else if ([6,8].includes(c.n)){
+    const halfGroups = groups / 2;
+    const first = halfGroups * full;
+    const showHalfGroups = (count,items,label) => `<div class="half-panel"><b>${label}</b><div class="half-groups">${Array.from({length:count},(_,i)=>`<span class="half-group"><small>Grupo ${i+1}</small><span>${Array.from({length:items},()=>c.ie).join(" ")}</span></span>`).join("")}</div><small>${count} × ${items} = ${count*items}</small></div>`;
+    $("#halfLesson").innerHTML = `<p class="say">Podemos hacer la mitad de los grupos y después duplicar el resultado. Así trabajamos con un número más pequeño.</p>
+      <div class="step-cards">
+        <div class="step-card" style="--d:0ms"><span class="step-number">1</span><strong>${groups} × ${full}</strong><small>Empezamos con ${groups} grupos de ${full} ${c.items}.</small></div>
+        <div class="step-card" style="--d:90ms"><span class="step-number">2</span><strong>La mitad de ${groups} es ${halfGroups}</strong><small>Usamos la mitad de los grupos.</small></div>
+        <div class="step-card" style="--d:180ms"><span class="step-number">3</span><strong>${halfGroups} × ${full} = ${first}</strong><small>Contamos los grupos más pequeños.</small></div>
+        <div class="step-card" style="--d:270ms"><span class="step-number">4</span><strong>${first} + ${first} = ${total}</strong><small>Duplicamos: añadimos la misma mitad otra vez.</small></div>
+      </div>
+      <div class="half-visual">${showHalfGroups(halfGroups,full,"Primera mitad")}${showHalfGroups(halfGroups,full,"La misma mitad otra vez")}</div>`;
+    $("#ruleExtra").textContent = `La mitad de ${groups} es ${halfGroups}. Primero contamos ${halfGroups} grupos de ${full}: ${first}. Después repetimos esos grupos: ${first} + ${first} = ${total}.`;
+  } else if (c.n === 9){
+    const other = full;
+    const firstDigit = other - 1;
+    const secondDigit = 10 - other;
+    $("#halfLesson").innerHTML = `<p class="say">Aunque el dibujo muestra ${groups} grupos de ${full}, podemos cambiar el orden y pensar en ${other} grupos de nueve. Así usamos el truco de la tabla del 9.</p>
+      <div class="step-cards">
+        <div class="step-card" style="--d:0ms"><span class="step-number">1</span><strong>${groups} × ${full} = ${other} × 9</strong><small>Es la misma multiplicación con los factores cambiados de orden.</small></div>
+        <div class="step-card" style="--d:90ms"><span class="step-number">2</span><strong>${other} − 1 = ${firstDigit}</strong><small>La primera cifra es uno menos que el número de grupos de nueve.</small></div>
+        <div class="step-card" style="--d:180ms"><span class="step-number">3</span><strong>10 − ${other} = ${secondDigit}</strong><small>La segunda cifra completa diez con ${other}.</small></div>
+        <div class="step-card" style="--d:270ms"><span class="step-number">4</span><strong>${firstDigit}${secondDigit}</strong><small>Unimos las cifras ${firstDigit} y ${secondDigit} para formar ${total}.</small></div>
+      </div>`;
+    $("#ruleExtra").textContent = `También puedes comprobarlo sumando las cifras: ${firstDigit} + ${secondDigit} = 9. En la tabla del 9, las cifras de cada resultado suman 9.`;
+  } else if (c.n === 10){
+    const other = full;
+    $("#halfLesson").innerHTML = `<p class="say">Aunque el dibujo muestra ${groups} grupos de ${full}, podemos cambiar el orden: ${other} × 10. Multiplicar por 10 es añadir un cero.</p>
+      <div class="step-cards"><div class="step-card"><span class="step-number">1</span><strong>${groups} × ${full}</strong><small>${groups} grupos de ${full} plátanos.</small></div>
+      <div class="step-card"><span class="step-number">2</span><strong>${other} × 10 = ${total}</strong><small>Cambiamos el orden de los factores.</small></div>
+      <div class="step-card"><span class="step-number">3</span><strong>${other} → ${total}</strong><small>Escribimos ${other} y añadimos un cero.</small></div></div>`;
+    $("#ruleExtra").textContent = `Por ejemplo, ${other} grupos de diez son ${total}. El cero nos ayuda a contar de diez en diez.`;
+  } else if (c.n === 5){
+    const other = full;
+    const sequence = Array.from({length:other},(_,i)=>(i+1)*5).join(", ");
+    $("#halfLesson").innerHTML = `<p class="say">Facundo muestra ${groups} grupos de ${full}. También podemos cambiar el orden y contar ${other} grupos de cinco.</p>
+      <div class="step-cards"><div class="step-card"><span class="step-number">1</span><strong>${groups} × ${full} = ${other} × 5</strong><small>Es la misma multiplicación con los factores cambiados de orden.</small></div><div class="step-card"><span class="step-number">2</span><strong>${sequence}</strong><small>Contamos de cinco en cinco, un salto por cada grupo.</small></div><div class="step-card"><span class="step-number">3</span><strong>${total}</strong><small>El último número es el resultado.</small></div></div>`;
+    $("#ruleExtra").textContent = "Los resultados de la tabla del 5 terminan en 0 o en 5. Cuando sabes contar de cinco en cinco, puedes encontrar cada resultado.";
+  } else if (c.n === 3 || c.n === 7){
+    const other = full;
+    const sequence = Array.from({length:other},(_,i)=>(i+1)*c.n).join(" · ");
+    $("#halfLesson").innerHTML = `<p class="say">El dibujo muestra ${groups} grupos de ${full}. Si cambiamos el orden, podemos contar ${other} grupos de ${c.n}, avanzando de ${c.n} en ${c.n}.</p>
+      <div class="step-cards"><div class="step-card"><span class="step-number">1</span><strong>${groups} × ${full} = ${other} × ${c.n}</strong><small>Los factores pueden cambiar de orden sin cambiar el resultado.</small></div><div class="step-card"><span class="step-number">2</span><strong>${sequence}</strong><small>Cada salto añade otro grupo de ${c.n}.</small></div><div class="step-card"><span class="step-number">3</span><strong>${total}</strong><small>Llegamos al resultado de la operación.</small></div></div>`;
+    $("#ruleExtra").textContent = `${c.name} te ayuda a recordar la tabla del ${c.n}. Puedes decir la secuencia despacio y volver al dibujo cuando lo necesites.`;
+  } else {
+    // Mimi's ×1 rule is deliberately short and uses the same group-card language.
+    $("#halfLesson").innerHTML = `<p class="say">Cada grupo tiene un solo quesito. Al añadir otro grupo, añadimos un quesito más.</p>
+      <div class="step-cards"><div class="step-card"><span class="step-number">1</span><strong>1, 2, 3, 4, 5… 10</strong><small>Cuenta un quesito por cada grupo.</small></div><div class="step-card"><span class="step-number">2</span><strong>4 grupos de 1 = 4 × 1</strong><small>El número de grupos se mantiene en la multiplicación.</small></div></div>`;
+    $("#ruleExtra").textContent = "También puedes imaginar un solo grupo con seis quesitos. Aquí vamos a practicar la otra forma: varios grupos de uno.";
+  }
+}
+function renderStoryGroupChoices(){
+  $("#storyGroupChoices").innerHTML = Array.from({length:10},(_,i)=>i+1).map(n=>`<button type="button" class="number-pill ${n===storyBuilderGroups?"selected":""}" data-story-groups="${n}" aria-pressed="${n===storyBuilderGroups}">${n}</button>`).join("");
+}
+$("#storyGroupChoices").addEventListener("click",e=>{
+  const b=e.target.closest("[data-story-groups]");
+  if(!b) return;
+  storyBuilderGroups=+b.dataset.storyGroups;
+  renderStoryGroupChoices();
+  updateStoryBuilder();
+});
+function updateStoryBuilder(){
+  const c=byN(curN), groups=storyBuilderGroups, each=c.n;
+  $("#eq").innerHTML=`${groups} × ${each} = <span class="x">${groups*each}</span>`;
+  drawGroups($("#storyBuilderGroups"),groups,each,c.ie);
+  const noun = itemLabel(c,each);
+  $("#storyLine").textContent=`${c.name} tiene ${groups} ${groups===1?"grupo":"grupos"} con ${each} ${noun} en cada uno. En total hay ${groups*each} ${c.items}.`;
+  $("#mimiExtra").hidden=curN!==1;
+  if(curN===1) $("#mimiExtra").textContent="También puedes formar un solo grupo de seis quesitos. Aquí practicamos grupos de uno: cuatro grupos de uno son cuatro quesitos.";
+}
+function renderStoryTableDetail(groups){
+  const c = byN(curN);
+  document.querySelectorAll("[data-story-mult]").forEach(b => b.classList.toggle("selected", +b.dataset.storyMult === groups));
+  $("#storyTableDetail").innerHTML = `<b>${groups} × ${c.n} = ${groups * c.n}</b><p>${c.name} tiene ${groups} ${groups === 1 ? "grupo" : "grupos"} de ${c.n} ${itemLabel(c,c.n)}. Cuenta cada grupo para encontrar el total.</p><div class="lesson-groups">${Array.from({length:groups},(_,i)=>`<div class="lesson-group"><span class="group-label">Grupo ${i+1}</span><div class="group-items">${Array.from({length:c.n},()=>`<span>${c.ie}</span>`).join("")}</div></div>`).join("")}</div><p class="muted"><b>Truco de ${c.name}:</b> ${c.tip}</p>`;
+}
+$("#timetable").addEventListener("click", e => {
+  const b = e.target.closest("[data-story-mult]");
+  if (b) renderStoryTableDetail(+b.dataset.storyMult);
+});
+function renderStoryQuestion(){
+  storyAnswered = false;
+  const c=byN(curN);
+  $("#storyQuestion").innerHTML = `¿Cuánto es <b>${lessonGroupsCount} × ${lessonItems}</b>?`;
+  $("#lessonOpts").innerHTML = makeOpts(lessonGroupsCount*lessonItems).map(v => `<button type="button" data-story-answer="${v}">${v}</button>`).join("");
+  $("#lessonFb").textContent = "";
+  $("#lessonFb").className = "fb";
+  $("#lessonResultActions").hidden = true;
+  $("#lessonStreak").textContent = `🔥 Racha: ${lessonStreak}`;
+}
+$("#lessonOpts").addEventListener("click", e => {
+  const b = e.target.closest("[data-story-answer]");
+  if (!b || storyAnswered) return;
+  storyAnswered = true;
+  const answer = lessonGroupsCount * lessonItems, right = +b.dataset.storyAnswer === answer;
+  if (right) lessonStreak++;
+  else lessonStreak=0;
+  document.querySelectorAll("#lessonOpts button").forEach(x => {
+    x.disabled = true;
+    if (+x.dataset.storyAnswer === answer) x.classList.add("right");
+  });
+  if (!right) b.classList.add("wrong");
+  $("#lessonFb").className = "fb " + (right ? "good" : "bad");
+  $("#lessonFb").textContent = right ? `¡Muy bien! ${lessonGroupsCount} × ${lessonItems} = ${answer}.` : `Casi. ${lessonGroupsCount} × ${lessonItems} = ${answer}. Puedes volver al dibujo y contar los grupos.`;
+  $("#lessonStreak").textContent = `🔥 Racha: ${lessonStreak}`;
+  $("#lessonResultActions").hidden = false;
+});
+$("#anotherLessonQuestion").addEventListener("click",()=>{
+  const c=byN(curN);
+  // Ask a fresh, balanced question from this character's table without leaving the lesson.
+  let nextGroups=1+Math.floor(Math.random()*10);
+  if(nextGroups===lessonGroupsCount) nextGroups=nextGroups===10?1:nextGroups+1;
+  lessonGroupsCount=nextGroups;
+  lessonItems=c.n;
+  renderStoryQuestion();
+});
+$("#back").addEventListener("click", () => { showTab("meet"); $("#tab-meet").focus(); });
+
+/* ---------- tabla general de multiplicar ---------- */
+$("#bigTable").addEventListener("click",e=>{
+  const b=e.target.closest("[data-big-r]");
+  if(b) showBigTableExample(+b.dataset.bigR,+b.dataset.bigC);
+});
+$("#tableBack").addEventListener("click",()=>showTab("meet"));
+$("#practiceBack").addEventListener("click",()=>showTab("meet"));
+
+function tableExampleDetailHTML(groups,each){
+  const character = characterForTableExample(groups,each);
+  const tip = tipForTableExample(groups,each,character);
+  return `<div class="hero-mini" style="--c:${character.color}"><span>${character.emoji}</span><div><b>${character.name} · ${groups} ${groups===1?"grupo":"grupos"} de ${each}</b><p class="muted">${groups} × ${each} = ${groups*each}</p></div></div>
+    <p style="margin-top:10px">${character.name} tiene <b>${groups} ${groups===1?"grupo":"grupos"}</b> de <b>${each} ${itemLabel(character,each)}</b>. En total hay <b>${groups*each}</b>.</p>
+    <div class="mini-drawing lesson-groups">${Array.from({length:groups},(_,i)=>`<div class="lesson-group"><span class="group-label">Grupo ${i+1}</span><div class="group-items">${Array.from({length:each},()=>`<span>${character.ie}</span>`).join("")}</div></div>`).join("")}</div>
+    <p class="table-tip"><b>Truco de ${character.name}:</b> ${tip}</p>`;
+}
+function renderBigTable(){
+  const cells = ['<span class="head">×</span>'];
+  for (let c=1;c<=10;c++) cells.push(`<span class="head">${c}</span>`);
+  for(let r=1;r<=10;r++){
+    cells.push(`<span class="head">${r}</span>`);
+    for(let c=1;c<=10;c++) cells.push(`<button type="button" data-big-r="${r}" data-big-c="${c}" aria-label="${r} grupos de ${c} es ${r*c}">${r*c}</button>`);
+  }
+  cells.push('<i class="big-ln h" id="bigLnH" aria-hidden="true"></i>','<i class="big-ln v" id="bigLnV" aria-hidden="true"></i>');
+  $("#bigTable").innerHTML = cells.join("");
+  $("#bigTable").classList.remove("table-load");
+  void $("#bigTable").offsetWidth;
+  $("#bigTable").classList.add("table-load");
+  showBigTableExample(3,2);
+}
+function showBigTableExample(groups,each){
+  const grid=$("#bigTable");
+  const selected = grid.querySelector(`button[data-big-r="${groups}"][data-big-c="${each}"]`);
+  grid.querySelectorAll("[data-big-r]").forEach(b => b.classList.toggle("selected", b === selected));
+  if(selected){
+    $("#bigLnH").style.top = (selected.offsetTop + selected.offsetHeight/2) + "px";
+    $("#bigLnV").style.left = (selected.offsetLeft + selected.offsetWidth/2) + "px";
+    $("#bigLnH").classList.add("on");
+    $("#bigLnV").classList.add("on");
+  }
+  $("#bigTableDetail").innerHTML=tableExampleDetailHTML(groups,each);
+}
+let selectedFactTable = 1;
+let factsCompleting = false;
+let chartCompleting = false;
+let chartPracticeReady = false;
+function renderFactsTable(){
+  const buttons = Array.from({length:10},(_,i)=>i+1).map(n=>
+    `<button type="button" class="chip" data-fact-table="${n}" aria-pressed="${n===selectedFactTable}">${n}</button>`
+  ).join("");
+  $("#factsNumbers").innerHTML = buttons;
+  renderSelectedFacts();
+  syncFactsFillView();
+}
+function renderSelectedFacts(){
+  $("#factsTitle").textContent = `Tabla del ${selectedFactTable}`;
+  $("#factsNumbers").querySelectorAll("[data-fact-table]").forEach(b=>
+    b.setAttribute("aria-pressed",String(+b.dataset.factTable===selectedFactTable))
+  );
+  const rows = Array.from({length:10},(_,i)=>i+1).map(each=>
+    `<button type="button" class="facts-row" data-fact-each="${each}" aria-label="${selectedFactTable} por ${each} es ${selectedFactTable*each}">
+      <span class="facts-equation">${selectedFactTable} × ${each}</span><span class="facts-equals">=</span><strong>${selectedFactTable*each}</strong>
+    </button>`
+  ).join("");
+  $("#factsList").innerHTML=rows;
+  $("#factsTableDetail").innerHTML=tableExampleDetailHTML(selectedFactTable,1);
+  renderFactsInputs();
+}
+function renderFactsInputs(){
+  $("#factsInputList").innerHTML=Array.from({length:10},(_,i)=>i+1).map(each=>
+    `<label class="facts-row facts-input-row" for="fact-answer-${each}">
+      <span class="facts-equation">${selectedFactTable} × ${each}</span><span class="facts-equals">=</span>
+      <input id="fact-answer-${each}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" data-fact-answer="${each}" placeholder="?" aria-label="Resultado de ${selectedFactTable} por ${each}">
+      <small class="fact-mark" aria-live="polite"></small>
+    </label>`
+  ).join("");
+}
+function syncFactsFillView(){
+  $("#factsReviewArea").hidden=factsCompleting;
+  $("#factsFillArea").hidden=!factsCompleting;
+  $("#toggleFactsFill").textContent=factsCompleting?"Ver tabla":"Completar";
+  $("#toggleFactsFill").setAttribute("aria-pressed",String(factsCompleting));
+  if(!factsCompleting) $("#factsFillFeedback").textContent="";
+}
+function syncChartFillView(){
+  $("#chartReviewArea").hidden=chartCompleting;
+  $("#chartFillArea").hidden=!chartCompleting;
+  $("#toggleChartFill").textContent=chartCompleting?"Ver tabla":"Completar";
+  $("#toggleChartFill").setAttribute("aria-pressed",String(chartCompleting));
+}
+$("#factsNumbers").addEventListener("click",e=>{
+  const b=e.target.closest("[data-fact-table]");
+  if(!b) return;
+  selectedFactTable=+b.dataset.factTable;
+  renderSelectedFacts();
+  if(factsCompleting) $("#factsFillFeedback").textContent="";
+});
+$("#factsList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-fact-each]");
+  if(!b) return;
+  $("#factsList").querySelectorAll("[data-fact-each]").forEach(x=>x.classList.toggle("selected",x===b));
+  $("#factsTableDetail").innerHTML=tableExampleDetailHTML(selectedFactTable,+b.dataset.factEach);
+});
+$("#toggleFactsFill").addEventListener("click",()=>{
+  factsCompleting=!factsCompleting;
+  if(factsCompleting){
+    renderFactsInputs();
+    $("#factsFillFeedback").textContent="Completa los diez resultados y después comprueba.";
+  }
+  syncFactsFillView();
+});
+$("#factsInputList").addEventListener("input",e=>{
+  if(!e.target.matches("[data-fact-answer]")) return;
+  e.target.value=e.target.value.replace(/[^0-9]/g,"");
+  e.target.classList.remove("correct","incorrect");
+  const mark=e.target.closest(".facts-row")?.querySelector(".fact-mark");
+  if(mark) mark.textContent="";
+});
+$("#checkFactsFill").addEventListener("click",()=>{
+  const fields=[...$("#factsInputList").querySelectorAll("[data-fact-answer]")];
+  const missing=fields.filter(x=>x.value.trim()==="");
+  if(missing.length){ $("#factsFillFeedback").textContent=`Te faltan ${missing.length} resultados. ¡Sin prisa!`; missing[0].focus(); return; }
+  let correct=0;
+  fields.forEach(input=>{
+    const each=+input.dataset.factAnswer;
+    const expected=selectedFactTable*each;
+    const ok=+input.value===expected;
+    input.classList.toggle("correct",ok);
+    input.classList.toggle("incorrect",!ok);
+    input.closest(".facts-row").querySelector(".fact-mark").textContent=ok?"✓":"Revisa";
+    if(ok) correct++;
+  });
+  $("#factsFillFeedback").textContent=correct===10?`¡Excelente! Completaste la tabla del ${selectedFactTable}. ⭐`:`Tienes ${correct} de 10 correctas. Puedes corregir las marcadas y comprobar otra vez.`;
+});
+$("#toggleChartFill").addEventListener("click",()=>{
+  chartCompleting=!chartCompleting;
+  if(chartCompleting&&!chartPracticeReady){ createFillPractice(); chartPracticeReady=true; }
+  syncChartFillView();
+});
+document.querySelectorAll("[data-table-mode]").forEach(b=>b.addEventListener("click",()=>{
+  const mode=b.dataset.tableMode;
+  document.querySelectorAll("[data-table-mode]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  $("#reviewMode").hidden=mode!=="review";
+  $("#factsMode").hidden=mode!=="facts";
+  if(mode==="facts") syncFactsFillView();
+  if(mode==="review") syncChartFillView();
+}));
+let fillBlanks=[], fillRound=0, fillSeen=Object.create(null);
+function createFillPractice(){
+  const all=[];
+  for(let r=1;r<=10;r++) for(let c=1;c<=10;c++) all.push({r,c,key:`${r}-${c}`});
+  const amount=Math.min(10,4+fillRound*2);
+  // Prefer less-practised cells so the same easy rows don't appear every round.
+  shuffle(all);
+  all.sort((a,b)=>(fillSeen[a.key]||0)-(fillSeen[b.key]||0));
+  fillBlanks=all.slice(0,amount);
+  fillBlanks.forEach(x=>fillSeen[x.key]=(fillSeen[x.key]||0)+1);
+  fillRound++;
+  renderFillTable();
+  $("#fillFeedback").textContent=`Hay ${amount} casillas para completar. ¡Sin prisa!`;
+}
+function renderFillTable(){
+  const blankSet=new Set(fillBlanks.map(x=>x.key));
+  const cells=['<span class="head">×</span>'];
+  for(let c=1;c<=10;c++) cells.push(`<span class="head" data-fill-c="${c}">${c}</span>`);
+  for(let r=1;r<=10;r++){
+    cells.push(`<span class="head" data-fill-r="${r}">${r}</span>`);
+    for(let c=1;c<=10;c++){
+      const key=`${r}-${c}`;
+      cells.push(blankSet.has(key)?`<input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" data-fill="${key}" data-r="${r}" data-c="${c}" aria-label="Resultado de ${r} por ${c}" placeholder="?">`:`<span data-r="${r}" data-c="${c}">${r*c}</span>`);
+    }
+  }
+  $("#fillGrid").innerHTML=cells.join("");
+}
+function highlightFillLine(input){
+  const r=+input.dataset.r,c=+input.dataset.c;
+  document.querySelectorAll("#fillGrid [data-r],#fillGrid [data-fill-r],#fillGrid [data-fill-c]").forEach(el=>{
+    const row=+(el.dataset.r||el.dataset.fillR||0);
+    const col=+(el.dataset.c||el.dataset.fillC||0);
+    el.classList.toggle("line-active",row===r||col===c);
+  });
+}
+$("#fillGrid").addEventListener("focusin",e=>{if(e.target.matches("[data-fill]")) highlightFillLine(e.target);});
+$("#fillGrid").addEventListener("focusout",e=>{if(e.target.matches("[data-fill]")) document.querySelectorAll("#fillGrid .line-active").forEach(x=>x.classList.remove("line-active"));});
+$("#fillGrid").addEventListener("input",e=>{
+  if(e.target.matches("[data-fill]")){
+    e.target.value=e.target.value.replace(/[^0-9]/g,"");
+    e.target.classList.remove("incorrect","correct");
+    highlightFillLine(e.target);
+  }
+});
+$("#checkFill").addEventListener("click",()=>{
+  const fields=[...document.querySelectorAll("#fillGrid [data-fill]")];
+  const missing=fields.filter(x=>x.value.trim()==="");
+  if(missing.length){ $("#fillFeedback").textContent=`Te faltan ${missing.length} casillas. ¡Puedes hacerlo!`; missing[0].focus(); return; }
+  let correct=0;
+  fields.forEach(input=>{
+    const [r,c]=input.dataset.fill.split("-").map(Number), ok=Number(input.value)===r*c;
+    input.classList.toggle("correct",ok); input.classList.toggle("incorrect",!ok);
+    if(ok) correct++;
+  });
+  $("#fillFeedback").textContent=correct===fields.length?`¡Excelente! Completaste las ${fields.length} casillas. ⭐`:`Tienes ${correct} de ${fields.length} correctas. Revisa las casillas marcadas y prueba otra vez.`;
+});
+$("#newFill").addEventListener("click",createFillPractice);
+
+/* ---------- práctica ---------- */
+let table = "mix", P = null, drawGroupCount = 1, drawEachCount = 0;
+function renderChips(){
+  const opts = ["mix", 1,2,3,4,5,6,7,8,9,10];
+  $("#chips").innerHTML = opts.map(v => `<button class="chip" data-t="${v}" aria-pressed="${String(v) === String(table)}">${v === "mix" ? "Mixta" : "× " + v}</button>`).join("");
+  if (!P) startPractice(table);
+}
+$("#chips").addEventListener("click", e => {
+  const b = e.target.closest("[data-t]");
+  if (b) startPractice(b.dataset.t === "mix" ? "mix" : +b.dataset.t);
+});
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function makeOpts(ans){
+  const set = new Set([ans]);
+  const candidates=[];
+  for(let d=1;d<=12;d++){ if(ans-d>0)candidates.push(ans-d); candidates.push(ans+d); }
+  shuffle(candidates);
+  while(set.size<4) set.add(candidates.shift());
+  return shuffle([...set]);
+}
+function orderedOneToTen(first,second){
+  const rest=shuffle([1,2,3,4,5,6,7,8,9,10].filter(n=>n!==first&&n!==second));
+  const out=Array(10);
+  out[4]=first; out[8]=second;
+  const slots=[0,1,2,3,5,6,7,9];
+  slots.forEach((slot,i)=>out[slot]=rest[i]);
+  return out;
+}
+function startPractice(t){
+  table = t;
+  P = { t, i: 0, score: 0, answered: false, qs: [] };
+  const nOrder = t === "mix" ? orderedOneToTen(4,5) : Array(10).fill(t);
+  const aOrder = orderedOneToTen(4,5);
+  const types=["story","visual","equation","story","draw","visual","equation","story","draw","equation"];
+  for(let k=0;k<10;k++){
+    const n=nOrder[k], a=aOrder[k], type=types[k];
+    P.qs.push({n,a,c:byN(n),ans:a*n,opts:makeOpts(a*n),type});
+  }
+  renderChips();
+  $("#resPanel").hidden = true;
+  $("#qPanel").hidden = false;
+  showQ();
+}
+function renderDrawGroupChoices(q){
+  $("#drawGroupChoices").innerHTML=Array.from({length:10},(_,i)=>i+1).map(n=>`<button type="button" class="number-pill ${n===drawGroupCount?"selected":""}" data-draw-groups="${n}" aria-pressed="${n===drawGroupCount}" ${P?.answered?"disabled":""}>${n}</button>`).join("");
+}
+function showDrawBuilder(q){
+  drawGroupCount=1;
+  drawEachCount=0;
+  renderDrawBuilder(q);
+}
+function renderDrawBuilder(q){
+  renderDrawGroupChoices(q);
+  $("#drawGroups").innerHTML=Array.from({length:drawGroupCount},(_,i)=>`<div class="draw-group">
+    <b>Grupo ${i+1}</b>
+    <div class="draw-group-items">${drawEachCount ? Array.from({length:drawEachCount},()=>`<span>${q.c.ie}</span>`).join("") : `<small>Vacío</small>`}</div>
+    <div class="draw-item-tools"><button type="button" data-draw-change="-1" aria-label="Quitar un objeto de todos los grupos" ${drawEachCount===0||P?.answered?"disabled":""}>−</button><button type="button" data-draw-change="1" aria-label="Añadir un objeto a todos los grupos" ${drawEachCount>=10||P?.answered?"disabled":""}>+</button></div>
+  </div>`).join("");
+  $("#drawCount").textContent=`${drawGroupCount} ${drawGroupCount===1?"grupo":"grupos"} · ${drawEachCount} ${drawEachCount===1?"objeto":"objetos"} en cada grupo`;
+  const groupReady=drawGroupCount===q.a, itemsReady=drawEachCount===q.n;
+  const ready=groupReady && itemsReady;
+  const reminders=[];
+  if(!groupReady) reminders.push(`elige ${q.a} ${q.a===1?"grupo":"grupos"}`);
+  if(!itemsReady) reminders.push(`ajusta los objetos para que haya ${q.n} en cada grupo`);
+  $("#drawReady").textContent=ready?"¡Tu dibujo coincide! Ahora elige el resultado.":`Tu dibujo va bien: ${reminders.join(" y ")}.`;
+  $("#drawReady").classList.toggle("ready",ready);
+  $("#opts").hidden=!ready;
+}
+$("#drawGroupChoices").addEventListener("click",e=>{
+  if(P?.answered) return;
+  const b=e.target.closest("[data-draw-groups]");
+  if(!b) return;
+  drawGroupCount=+b.dataset.drawGroups;
+  renderDrawBuilder(P.qs[P.i]);
+});
+$("#drawGroups").addEventListener("click",e=>{
+  if(P?.answered) return;
+  const b=e.target.closest("[data-draw-change]");
+  if(!b) return;
+  drawEachCount=Math.max(0,Math.min(10,drawEachCount+Number(b.dataset.drawChange)));
+  renderDrawBuilder(P.qs[P.i]);
+});
+function showQ(){
+  const q = P.qs[P.i];
+  P.answered = false;
+  $("#progText").textContent = `Pregunta ${P.i + 1} de 10`;
+  $("#scoreText").textContent = `Correctas: ${P.score}`;
+  const prompts = {
+    story:`${q.c.name} tiene ${q.a} ${q.a === 1 ? "grupo" : "grupos"} con ${q.n} ${itemLabel(q.c,q.n)} en cada uno. ¿Cuántos hay en total?`,
+    equation:`¿Cuánto es ${q.a} × ${q.n}?`,
+    visual:`Observa los grupos de ${q.c.name}. ¿Cuántos ${q.c.items} hay en total?`,
+    draw:`La operación es ${q.a} × ${q.n}. Construye ${q.a} grupos con ${q.n} ${itemLabel(q.c,q.n)} en cada uno antes de elegir el resultado.`
+  };
+  const labels = {story:"Problema con cuento",equation:"Calcula",visual:"Cuenta el dibujo",draw:"Crea tu dibujo"};
+  $("#qKind").textContent = labels[q.type];
+  $("#prompt").textContent = prompts[q.type];
+  const needsPicture = q.type === "story" || q.type === "visual";
+  $("#showPic").parentElement.hidden = !needsPicture;
+  drawGroups($("#qPic"), q.a, q.n, q.c.ie);
+  $("#qPic").hidden = !needsPicture || !$("#showPic").checked;
+  $("#drawBuild").hidden = q.type !== "draw";
+  $("#opts").hidden = false;
+  if(q.type === "draw") showDrawBuilder(q);
+  $("#opts").innerHTML = q.opts.map((v,i) => `<button data-v="${v}" aria-label="Respuesta ${i+1}: ${v}">${v}</button>`).join("");
+  if(q.type === "draw") $("#opts").hidden=true;
+  $("#fb").textContent = "";
+  $("#fb").className = "fb";
+  $("#feedbackExplain").hidden = true;
+  $("#feedbackText").textContent = "";
+  $("#feedbackDrawing").innerHTML = "";
+  $("#next").hidden = true;
+  $("#next").textContent = P.i < 9 ? "Siguiente" : "Ver mis resultados";
+}
+$("#showPic").addEventListener("change", () => { if(P){const q=P.qs[P.i];$("#qPic").hidden = !(q.type === "story" || q.type === "visual") || !$("#showPic").checked;} });
+function explainPracticeQuestion(q){
+  const a=q.a, n=q.n, ans=q.ans;
+  if(n===1) return `Hay ${a} grupos y cada grupo tiene 1 objeto. Contamos uno por grupo: ${Array.from({length:a},(_,i)=>i+1).join(", ")}. Por eso ${a} × 1 = ${ans}. Multiplicar por 1 deja el número igual.`;
+  if(n===2) return `Hay ${a} grupos de 2. Podemos sumar dos veces el número de grupos: ${a} + ${a} = ${ans}.`;
+  if(n===4 || n===6 || n===8){
+    const half=n/2, partial=a*half;
+    return `La mitad de ${n} es ${half}. Primero contamos ${a} grupos de ${half}: ${a} × ${half} = ${partial}. Después duplicamos: ${partial} + ${partial} = ${ans}.`;
+  }
+  if(n===5) return `Cuenta de cinco en cinco, un grupo cada vez: ${Array.from({length:a},(_,i)=>(i+1)*5).join(", ")}. Los resultados terminan en 0 o en 5; llegamos a ${ans}.`;
+  if(n===9) return `Imagina 10 grupos de ${a}: serían ${a*10}. Quitamos un grupo de ${a}: ${a*10} − ${a} = ${ans}.`;
+  if(n===10) return `Hay ${a} grupos de diez. Multiplicar ${a} por 10 es añadir un cero: ${a} se convierte en ${ans}.`;
+  if(n===3) return `Cuenta de tres en tres, un grupo cada vez: ${Array.from({length:a},(_,i)=>(i+1)*3).join(", ")}. El último número es ${ans}.`;
+  if(n===7) return `Cuenta siete por cada grupo: ${Array.from({length:a},(_,i)=>(i+1)*7).join(", ")}. Al llegar al grupo ${a}, tenemos ${ans}.`;
+  return `Son ${a} grupos de ${n}. Cada grupo tiene ${n} objetos. Cuenta cada grupo una vez para llegar a ${ans}.`;
+}
+$("#opts").addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]");
+  if (!b || P.answered) return;
+  const q = P.qs[P.i];
+  if(q.type === "draw" && !(drawGroupCount===q.a && drawEachCount===q.n)) return;
+  P.answered = true;
+  const v = +b.dataset.v, right = v === q.ans;
+  if (right) P.score++;
+  document.querySelectorAll("#opts button").forEach(x => {
+    x.disabled = true;
+    if (+x.dataset.v === q.ans) x.classList.add("right");
+  });
+  if (!right) b.classList.add("wrong");
+  if(q.type === "draw") renderDrawBuilder(q);
+  const fb = $("#fb");
+  fb.className = "fb " + (right ? "good" : "bad");
+  fb.innerHTML = right
+    ? `¡Muy bien! ${q.a} × ${q.n} = ${q.ans}.`
+    : `Casi. La respuesta es ${q.a} × ${q.n} = ${q.ans}. Mira cómo se forman los grupos:`;
+  if(!right){
+    $("#feedbackText").textContent = explainPracticeQuestion(q);
+    drawGroups($("#feedbackDrawing"),q.a,q.n,q.c.ie);
+    $("#feedbackExplain").hidden = false;
+  } else {
+    $("#feedbackExplain").hidden = true;
+  }
+  $("#scoreText").textContent = `Correctas: ${P.score}`;
+  $("#next").hidden = false;
+  $("#next").focus();
+});
+$("#next").addEventListener("click", () => {
+  if (P.i < 9) { P.i++; showQ(); }
+  else finish();
+});
+
+function finish(){
+  const s = P.score, st = starsFor(s);
+  if (P.t !== "mix") {
+    const key = String(P.t);
+    store.best[key] = Math.max(store.best[key] || 0, s);
+    saveStore();
+  }
+  const label = P.t === "mix" ? "las tablas mixtas" : `la tabla del ${P.t}`;
+  $("#qPanel").hidden = true;
+  $("#resPanel").hidden = false;
+  $("#resPanel").innerHTML = `
+    <p class="big">${s}<span style="font-size:1.6rem"> / 10</span></p>
+    <p class="stars">${[0,1,2].map(i => i < st ? "★" : "☆").join("")}</p>
+    <h3>${s >= 9 ? "¡Excelente trabajo!" : s >= 6 ? "¡Buen trabajo! Sigue practicando." : "Buen intento. Mira otra vez los dibujos."}</h3>
+    <p class="muted" style="margin-top:10px">Acertaste ${s} de 10 en ${label}.</p>
+    <div class="row">
+      <button class="next" id="again">Jugar otra vez</button>
+      <button class="ghost-box" id="toStory">${P.t === "mix" ? "Ver a los personajes" : "Ver a " + byN(P.t).name}</button>
+    </div>`;
+  $("#again").addEventListener("click", () => startPractice(P.t));
+  $("#toStory").addEventListener("click", () => {
+    if (P.t === "mix") showTab("meet");
+    else openStory(P.t);
+  });
+  $("#again").focus();
+}
+
+drawDemo();
+drawTable();
+drawConfetti();
+renderRules();
+goSlide(0);
+renderMeet();
+renderBigTable();
+renderFactsTable();
+syncChartFillView();
+syncFactsFillView();
+$(".tabs").hidden = true;
+</script>
+</body>
+</html>
